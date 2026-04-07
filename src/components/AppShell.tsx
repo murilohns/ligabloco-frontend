@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Sheet,
@@ -17,16 +18,53 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, Building2, LogOut, LayoutGrid, Users } from 'lucide-react';
+import { User, Building2, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { apiClient } from '../lib/axios';
 
+interface Condominium {
+  id: string;
+  name: string;
+  address: string;
+  role: string;
+  isActive: boolean;
+  joinedAt: string;
+}
+
 export default function AppShell() {
   const navigate = useNavigate();
-  const { user, activeCondominiumName, clearAuth } = useAuthStore();
+  const { user, activeCondominiumName, activeCondominiumId, updateToken, clearAuth } = useAuthStore();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [switching, setSwitching] = useState<string | null>(null);
+
+  const { data: condominiums = [] } = useQuery<Condominium[]>({
+    queryKey: ['condominiums'],
+    queryFn: () => apiClient.get('/users/me/condominiums').then((r) => r.data),
+    enabled: !!activeCondominiumId,
+  });
+
+  async function handleSwitch(condominiumId: string) {
+    if (condominiumId === activeCondominiumId) return;
+    setSwitching(condominiumId);
+    try {
+      const { data } = await apiClient.post('/auth/switch-tenant', { condominiumId });
+      const name = condominiums.find((c) => c.id === condominiumId)?.name;
+      updateToken(data.accessToken, condominiumId, name);
+    } catch {
+      // silent — user can try again
+    } finally {
+      setSwitching(null);
+    }
+  }
 
   const initials = user?.name
     ? user.name
@@ -67,9 +105,41 @@ export default function AppShell() {
         {/* Active condominium — center, desktop only */}
         <div className="flex-1 hidden md:flex justify-center">
           {activeCondominiumName && (
-            <span className="text-primary-foreground/70 text-sm truncate max-w-xs">
-              {activeCondominiumName}
-            </span>
+            condominiums.length > 1 ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
+                    <span className="truncate max-w-xs">{activeCondominiumName}</span>
+                    {switching !== null ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="min-w-[200px]">
+                  {condominiums.map((condo, index) => (
+                    <div key={condo.id}>
+                      {index > 0 && <DropdownMenuSeparator />}
+                      <DropdownMenuItem
+                        onClick={() => handleSwitch(condo.id)}
+                        disabled={switching === condo.id}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Check
+                          className={`h-4 w-4 shrink-0 ${condo.id === activeCondominiumId ? 'opacity-100' : 'opacity-0'}`}
+                        />
+                        <span className="truncate">{condo.name}</span>
+                      </DropdownMenuItem>
+                    </div>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <span className="text-primary-foreground/70 text-sm truncate max-w-xs">
+                {activeCondominiumName}
+              </span>
+            )
           )}
         </div>
 
