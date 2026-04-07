@@ -65,7 +65,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left branded panel — hidden on mobile */}
-      <div className="hidden md:flex md:w-2/5 bg-primary flex-col justify-center items-center p-12">
+      <div className="hidden md:flex md:w-2/5 flex-col justify-center items-center p-12"
+        style={{ background: 'linear-gradient(160deg, oklch(0.50 0.26 280) 0%, oklch(0.36 0.22 270) 60%, oklch(0.28 0.18 260) 100%)' }}>
         <span className="text-primary-foreground font-bold text-3xl tracking-tight">Liga Bloco</span>
         <p className="text-primary-foreground/70 text-sm mt-3 text-center max-w-xs">
           O marketplace do seu condomínio
@@ -81,7 +82,7 @@ export default function LoginPage() {
           Entre com seu e-mail e senha para acessar o condomínio
         </p>
 
-        <Card className="w-full max-w-sm mt-6">
+        <Card className="w-full max-w-sm mt-6 glass shadow-lg">
           <CardContent className="py-12 px-8">
             {serverError && (
               <Alert variant="destructive" className="mb-4">

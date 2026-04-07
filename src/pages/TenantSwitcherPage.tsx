@@ -74,10 +74,10 @@ export default function TenantSwitcherPage() {
             return (
               <div
                 key={condo.id}
-                className={`flex items-center justify-between rounded border px-4 py-2 transition-colors ${
+                className={`flex items-center justify-between rounded-lg px-4 py-3 transition-colors ${
                   isActive
-                    ? 'border-2 border-primary'
-                    : 'hover:bg-neutral-100'
+                    ? 'glass border-2 border-primary shadow-sm'
+                    : 'glass hover:shadow-md cursor-pointer'
                 }`}
               >
                 <div>
