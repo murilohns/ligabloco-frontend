@@ -76,7 +76,7 @@ export default function TenantSwitcherPage() {
                 key={condo.id}
                 className={`flex items-center justify-between rounded border px-4 py-2 transition-colors ${
                   isActive
-                    ? 'border-2 border-foreground'
+                    ? 'border-2 border-primary'
                     : 'hover:bg-neutral-100'
                 }`}
               >
@@ -86,7 +86,7 @@ export default function TenantSwitcherPage() {
                 </div>
                 <div className="ml-4 shrink-0">
                   {isActive ? (
-                    <Badge className="bg-foreground text-background hover:bg-foreground">
+                    <Badge className="bg-primary text-primary-foreground hover:bg-primary">
                       Ativo
                     </Badge>
                   ) : (

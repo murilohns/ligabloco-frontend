@@ -63,72 +63,84 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center pt-16 px-4">
-      <h1 className="text-[28px] font-semibold text-center">Liga Bloco</h1>
-      <p className="text-[28px] font-semibold text-center mt-6">Bem-vindo de volta</p>
-      <p className="text-base text-muted-foreground text-center mt-2">
-        Entre com seu e-mail e senha para acessar o condomínio
-      </p>
+    <div className="min-h-screen flex">
+      {/* Left branded panel — hidden on mobile */}
+      <div className="hidden md:flex md:w-2/5 bg-primary flex-col justify-center items-center p-12">
+        <span className="text-primary-foreground font-bold text-3xl tracking-tight">Liga Bloco</span>
+        <p className="text-primary-foreground/70 text-sm mt-3 text-center max-w-xs">
+          O marketplace do seu condomínio
+        </p>
+      </div>
+      {/* Right form panel */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        {/* Mobile-only logo */}
+        <span className="md:hidden text-primary font-bold text-2xl mb-8">Liga Bloco</span>
 
-      <Card className="w-full max-w-[400px] mt-6">
-        <CardContent className="py-12 px-8">
-          {serverError && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{serverError}</AlertDescription>
-            </Alert>
-          )}
+        <p className="text-[28px] font-semibold text-center">Bem-vindo de volta</p>
+        <p className="text-base text-muted-foreground text-center mt-2">
+          Entre com seu e-mail e senha para acessar o condomínio
+        </p>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="seu@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <Card className="w-full max-w-sm mt-6">
+          <CardContent className="py-12 px-8">
+            {serverError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{serverError}</AlertDescription>
+              </Alert>
+            )}
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-mail</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="seu@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <Button type="submit" className="w-full mt-6" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Entrando…
-                  </>
-                ) : (
-                  'Entrar'
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-      <p className="text-[14px] text-center mt-4">
-        <Link to="/forgot-password" className="underline">
-          Esqueceu sua senha?
-        </Link>
-      </p>
+                <Button type="submit" className="w-full mt-6" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Entrando…
+                    </>
+                  ) : (
+                    'Entrar'
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
+        <p className="text-[14px] text-center mt-4">
+          <Link to="/forgot-password" className="underline">
+            Esqueceu sua senha?
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

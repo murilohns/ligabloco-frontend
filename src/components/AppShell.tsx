@@ -46,15 +46,15 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header: height 56px, secondary background */}
-      <header className="h-14 border-b bg-neutral-100 flex items-center px-4 gap-4">
+      {/* Header: height 56px, primary amber background */}
+      <header className="h-14 border-b bg-primary flex items-center px-4 gap-4">
         {/* Logo — left */}
-        <span className="font-semibold text-base">Liga Bloco</span>
+        <span className="text-primary-foreground font-bold text-lg tracking-tight">Liga Bloco</span>
 
         {/* Active condominium name — center (hidden on mobile) */}
         <div className="flex-1 hidden md:flex justify-center">
           {activeCondominiumName && (
-            <span className="text-sm text-muted-foreground truncate max-w-xs">
+            <span className="text-primary-foreground/70 text-sm truncate max-w-xs">
               {activeCondominiumName}
             </span>
           )}
@@ -64,10 +64,10 @@ export default function AppShell() {
         <div className="ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-foreground"
+              className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-foreground"
             >
               <Avatar className="h-8 w-8 cursor-pointer">
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">

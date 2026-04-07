@@ -74,7 +74,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-[480px]">
-      <h1 className="text-[20px] font-semibold mb-6">Meu Perfil</h1>
+      <h1 className="text-[20px] font-semibold mb-6 text-foreground">Meu Perfil</h1>
 
       {serverError && (
         <Alert variant="destructive" className="mb-4">
