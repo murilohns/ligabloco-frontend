@@ -46,8 +46,9 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header: height 56px, primary amber background */}
-      <header className="h-14 border-b bg-primary flex items-center px-4 gap-4">
+      {/* Header: height 56px, violet gradient with backdrop blur */}
+      <header className="h-14 border-b flex items-center px-4 gap-4 sticky top-0 z-40 backdrop-blur-sm"
+        style={{ background: 'linear-gradient(135deg, oklch(0.50 0.26 280) 0%, oklch(0.38 0.24 270) 100%)' }}>
         {/* Logo — left */}
         <span className="text-primary-foreground font-bold text-lg tracking-tight">Liga Bloco</span>
 
