@@ -8,10 +8,21 @@ import ActivatePage from './pages/ActivatePage';
 import TenantSwitcherPage from './pages/TenantSwitcherPage';
 import ProfilePage from './pages/ProfilePage';
 import DashboardPage from './pages/DashboardPage';
+import CondominiumsPage from './pages/admin/CondominiumsPage';
+import ResidentsPage from './pages/admin/ResidentsPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);
   if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function RequireRole({ role, children }: { role: 'superAdmin' | 'condoAdmin'; children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  if (role === 'superAdmin' && !user?.isSuperAdmin) return <Navigate to="/dashboard" replace />;
+  if (role === 'condoAdmin' && user?.condoRole !== 'CONDO_ADMIN' && !user?.isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -33,6 +44,22 @@ export const router = createBrowserRouter([
       { path: '/dashboard', element: <DashboardPage /> },
       { path: '/switch-tenant', element: <TenantSwitcherPage /> },
       { path: '/profile', element: <ProfilePage /> },
+      {
+        path: '/admin/condominiums',
+        element: (
+          <RequireRole role="superAdmin">
+            <CondominiumsPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/admin/residents',
+        element: (
+          <RequireRole role="condoAdmin">
+            <ResidentsPage />
+          </RequireRole>
+        ),
+      },
     ],
   },
 

@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Separator } from '@/components/ui/separator';
-import { User, Building2, LogOut } from 'lucide-react';
+import { User, Building2, LogOut, LayoutGrid, Users } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { apiClient } from '../lib/axios';
 
@@ -135,6 +135,24 @@ export default function AppShell() {
               <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
               Meus Condomínios
             </button>
+            {user?.isSuperAdmin && (
+              <button
+                onClick={() => navigateTo('/admin/condominiums')}
+                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
+              >
+                <LayoutGrid className="h-5 w-5 text-muted-foreground shrink-0" />
+                Condomínios
+              </button>
+            )}
+            {(user?.condoRole === 'CONDO_ADMIN' || user?.isSuperAdmin) && (
+              <button
+                onClick={() => navigateTo('/admin/residents')}
+                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
+              >
+                <Users className="h-5 w-5 text-muted-foreground shrink-0" />
+                Moradores
+              </button>
+            )}
             <Separator className="my-2" />
             <button
               onClick={() => {
