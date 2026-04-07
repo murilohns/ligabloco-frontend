@@ -7,6 +7,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ActivatePage from './pages/ActivatePage';
 import TenantSwitcherPage from './pages/TenantSwitcherPage';
 import ProfilePage from './pages/ProfilePage';
+import DashboardPage from './pages/DashboardPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.accessToken);
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       </RequireAuth>
     ),
     children: [
+      { path: '/dashboard', element: <DashboardPage /> },
       { path: '/switch-tenant', element: <TenantSwitcherPage /> },
       { path: '/profile', element: <ProfilePage /> },
     ],
@@ -36,5 +38,5 @@ export const router = createBrowserRouter([
 
   // Default redirect
   { path: '/', element: <Navigate to="/login" replace /> },
-  { path: '*', element: <Navigate to="/login" replace /> },
+  { path: '*', element: <Navigate to="/dashboard" replace /> },
 ]);
