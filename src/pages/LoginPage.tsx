@@ -1,3 +1,134 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { apiClient } from '../lib/axios';
+import { useAuthStore } from '../store/auth.store';
+
+const schema = z.object({
+  email: z.string().email('E-mail inválido'),
+  password: z.string().min(1, 'Informe sua senha'),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+interface LoginResponse {
+  accessToken: string;
+  user: { id: string; name: string; email: string };
+  condominiumId: string;
+}
+
 export default function LoginPage() {
-  return <div>Login page — implemented in plan 06</div>;
+  const navigate = useNavigate();
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const { formState: { isSubmitting } } = form;
+
+  async function onSubmit(values: FormValues) {
+    setServerError(null);
+    try {
+      const { data } = await apiClient.post<LoginResponse>('/auth/login', {
+        email: values.email,
+        password: values.password,
+      });
+      useAuthStore.getState().setAuth(data.accessToken, data.user, data.condominiumId);
+      navigate('/switch-tenant', { replace: true });
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 401) {
+        setServerError('E-mail ou senha incorretos. Verifique e tente novamente.');
+      } else {
+        setServerError('Algo deu errado. Tente novamente em alguns instantes.');
+      }
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center pt-16 px-4">
+      <h1 className="text-[28px] font-semibold text-center">Liga Bloco</h1>
+      <p className="text-[28px] font-semibold text-center mt-6">Bem-vindo de volta</p>
+      <p className="text-base text-muted-foreground text-center mt-2">
+        Entre com seu e-mail e senha para acessar o condomínio
+      </p>
+
+      <Card className="w-full max-w-[400px] mt-6">
+        <CardContent className="py-12 px-8">
+          {serverError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{serverError}</AlertDescription>
+            </Alert>
+          )}
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>E-mail</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="seu@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full mt-6" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Entrando…
+                  </>
+                ) : (
+                  'Entrar'
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <p className="text-[14px] text-center mt-4">
+        <Link to="/forgot-password" className="underline">
+          Esqueceu sua senha?
+        </Link>
+      </p>
+    </div>
+  );
 }
