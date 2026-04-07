@@ -2,13 +2,6 @@ import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -80,11 +73,10 @@ export default function AppShell() {
           )}
         </div>
 
-        {/* Avatar — right side */}
+        {/* Avatar — right side, opens Sheet on all screen sizes */}
         <div className="ml-auto flex items-center">
-          {/* Mobile: avatar opens Sheet */}
           <button
-            className="md:hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50"
+            className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50"
             onClick={() => setSheetOpen(true)}
             aria-label="Abrir menu"
           >
@@ -94,35 +86,10 @@ export default function AppShell() {
               </AvatarFallback>
             </Avatar>
           </button>
-
-          {/* Desktop: avatar opens DropdownMenu */}
-          <div className="hidden md:block">
-            <DropdownMenu>
-              <DropdownMenuTrigger className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-foreground">
-                <Avatar className="h-8 w-8 cursor-pointer">
-                  <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  Meu Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/switch-tenant')}>
-                  Meus Condomínios
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={() => setLogoutOpen(true)}>
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       </header>
 
-      {/* Mobile Sheet drawer */}
+      {/* Sheet drawer — all screen sizes */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
           {/* Sheet header with user info */}
