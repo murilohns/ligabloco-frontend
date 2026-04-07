@@ -28,8 +28,9 @@ type FormValues = z.infer<typeof schema>;
 
 interface LoginResponse {
   accessToken: string;
-  user: { id: string; name: string; email: string };
+  user: { id: string; name: string; email: string; isSuperAdmin: boolean };
   condominiumId: string;
+  condoRole: 'RESIDENT' | 'CONDO_ADMIN' | null;
 }
 
 export default function LoginPage() {
@@ -50,7 +51,17 @@ export default function LoginPage() {
         email: values.email,
         password: values.password,
       });
-      useAuthStore.getState().setAuth(data.accessToken, data.user, data.condominiumId);
+      useAuthStore.getState().setAuth(
+        data.accessToken,
+        {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          isSuperAdmin: data.user.isSuperAdmin ?? false,
+          condoRole: data.condoRole ?? null,
+        },
+        data.condominiumId,
+      );
       navigate('/switch-tenant', { replace: true });
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;

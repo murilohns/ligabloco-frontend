@@ -4,6 +4,8 @@ interface User {
   id: string;
   name: string;
   email: string;
+  isSuperAdmin: boolean;
+  condoRole: 'RESIDENT' | 'CONDO_ADMIN' | null;
 }
 
 interface AuthState {
