@@ -13,9 +13,11 @@ interface AuthState {
   user: User | null;
   activeCondominiumId: string | null;
   activeCondominiumName: string | null;
+  isInitializing: boolean;
   setAuth: (token: string, user: User, condominiumId: string, condominiumName?: string) => void;
-  updateToken: (token: string, condominiumId: string, condominiumName?: string) => void;
+  updateToken: (token: string, condominiumId: string, condominiumName?: string, user?: Partial<User>) => void;
   clearAuth: () => void;
+  setInitialized: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -23,15 +25,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   activeCondominiumId: null,
   activeCondominiumName: null,
+  isInitializing: true,
   setAuth: (accessToken, user, activeCondominiumId, activeCondominiumName) =>
     set({ accessToken, user, activeCondominiumId, activeCondominiumName: activeCondominiumName ?? null }),
-  updateToken: (accessToken, activeCondominiumId, activeCondominiumName) =>
+  updateToken: (accessToken, activeCondominiumId, activeCondominiumName, user) =>
     set((state) => ({
       accessToken,
       activeCondominiumId,
-      // Preserve existing name if not provided (e.g., on silent token refresh)
       activeCondominiumName: activeCondominiumName ?? state.activeCondominiumName,
+      user: user ? { ...state.user, ...user } as User : state.user,
     })),
   clearAuth: () =>
-    set({ accessToken: null, user: null, activeCondominiumId: null, activeCondominiumName: null }),
+    set({ accessToken: null, user: null, activeCondominiumId: null, activeCondominiumName: null, isInitializing: false }),
+  setInitialized: () => set({ isInitializing: false }),
 }));
