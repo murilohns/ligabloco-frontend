@@ -105,18 +105,18 @@ export default function AppShell() {
         {/* Active condominium — center */}
         <div className="flex-1 flex justify-center">
           {activeCondominiumName && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
-                  <span className="truncate max-w-xs">{activeCondominiumName}</span>
-                  {switching !== null ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              {condominiums.length > 0 && (
+            condominiums.length > 1 ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
+                    <span className="truncate max-w-xs">{activeCondominiumName}</span>
+                    {switching !== null ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
                 <DropdownMenuContent align="center" className="min-w-[200px]">
                   {condominiums.map((condo, index) => (
                     <div key={condo.id}>
@@ -134,8 +134,12 @@ export default function AppShell() {
                     </div>
                   ))}
                 </DropdownMenuContent>
-              )}
-            </DropdownMenu>
+              </DropdownMenu>
+            ) : (
+              <span className="text-sm text-primary-foreground/80 truncate max-w-xs">
+                {activeCondominiumName}
+              </span>
+            )
           )}
         </div>
 
