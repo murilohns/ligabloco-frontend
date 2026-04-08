@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, Building2, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { apiClient } from '../lib/axios';
 
@@ -207,14 +207,7 @@ export default function AppShell() {
               <User className="h-5 w-5 text-muted-foreground shrink-0" />
               Meu Perfil
             </button>
-            <button
-              onClick={() => navigateTo('/switch-tenant')}
-              className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-            >
-              <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
-              Meus Condomínios
-            </button>
-            {user?.isSuperAdmin && (
+{user?.isSuperAdmin && (
               <button
                 onClick={() => navigateTo('/admin/condominiums')}
                 className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"

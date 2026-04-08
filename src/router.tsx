@@ -7,7 +7,6 @@ import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ActivatePage from './pages/ActivatePage';
-import TenantSwitcherPage from './pages/TenantSwitcherPage';
 import ProfilePage from './pages/ProfilePage';
 import DashboardPage from './pages/DashboardPage';
 import CondominiumsPage from './pages/admin/CondominiumsPage';
@@ -83,8 +82,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: '/dashboard', element: <DashboardPage /> },
-      { path: '/switch-tenant', element: <TenantSwitcherPage /> },
-      { path: '/profile', element: <ProfilePage /> },
+{ path: '/profile', element: <ProfilePage /> },
       {
         path: '/admin/condominiums',
         element: (

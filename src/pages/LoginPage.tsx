@@ -62,7 +62,7 @@ export default function LoginPage() {
         },
         data.condominiumId,
       );
-      navigate('/switch-tenant', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 401) {
