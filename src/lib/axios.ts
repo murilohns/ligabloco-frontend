@@ -23,7 +23,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config as typeof error.config & { _retried?: boolean };
-    if (error.response?.status !== 401 || original._retried) {
+    const url = original.url ?? '';
+    const isPublicRoute = url.includes('/auth/login') || url.includes('/auth/refresh');
+    if (error.response?.status !== 401 || original._retried || isPublicRoute) {
       return Promise.reject(error);
     }
     original._retried = true;
@@ -41,9 +43,18 @@ apiClient.interceptors.response.use(
     try {
       const { data } = await apiClient.post<{ accessToken: string }>('/auth/refresh');
       const newToken = data.accessToken;
+      const payload = JSON.parse(atob(newToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
       const state = useAuthStore.getState();
-      // Preserve condominiumId and name on silent refresh
-      state.updateToken(newToken, state.activeCondominiumId!);
+      state.updateToken(
+        newToken,
+        payload.condominiumId ?? state.activeCondominiumId!,
+        state.activeCondominiumName ?? undefined,
+        {
+          email: payload.email,
+          isSuperAdmin: payload.isSuperAdmin ?? false,
+          condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN') || null,
+        },
+      );
       refreshQueue.forEach((cb) => cb(newToken));
       refreshQueue = [];
       original.headers.Authorization = `Bearer ${newToken}`;
