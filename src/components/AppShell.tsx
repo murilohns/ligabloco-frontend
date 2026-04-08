@@ -52,6 +52,12 @@ export default function AppShell() {
     enabled: !!activeCondominiumId,
   });
 
+  // Derive active name from fetched list (survives page reload — JWT has no condominiumName)
+  const activeCondoName =
+    condominiums.find((c) => c.id === activeCondominiumId)?.name ??
+    activeCondominiumName ??
+    '';
+
   async function handleSwitch(condominiumId: string) {
     if (condominiumId === activeCondominiumId) return;
     setSwitching(condominiumId);
@@ -99,17 +105,17 @@ export default function AppShell() {
           backdropFilter: 'blur(8px)',
         }}
       >
-        {/* Logo */}
-        <span className="text-primary-foreground font-bold text-lg tracking-tight">Liga Bloco</span>
+        {/* Logo + condominium switcher */}
+        <span className="text-primary-foreground font-bold text-lg tracking-tight shrink-0">Liga Bloco</span>
 
-        {/* Active condominium — center */}
-        <div className="flex-1 flex justify-center">
-          {activeCondominiumName && (
-            condominiums.length > 1 ? (
+        {activeCondoName && (
+          <>
+            <span className="text-primary-foreground/30 text-lg shrink-0">|</span>
+            {condominiums.length > 1 ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
-                    <span className="truncate max-w-xs">{activeCondominiumName}</span>
+                    <span className="truncate max-w-[180px]">{activeCondoName}</span>
                     {switching !== null ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
                     ) : (
@@ -117,7 +123,7 @@ export default function AppShell() {
                     )}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="min-w-[200px]">
+                <DropdownMenuContent align="start" className="min-w-[200px]">
                   {condominiums.map((condo, index) => (
                     <div key={condo.id}>
                       {index > 0 && <DropdownMenuSeparator />}
@@ -136,15 +142,18 @@ export default function AppShell() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <span className="text-sm text-primary-foreground/80 truncate max-w-xs">
-                {activeCondominiumName}
+              <span className="text-sm text-primary-foreground/80 truncate max-w-[180px]">
+                {activeCondoName}
               </span>
-            )
-          )}
-        </div>
+            )}
+          </>
+        )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Avatar — right side, opens Sheet on all screen sizes */}
-        <div className="ml-auto flex items-center">
+        <div className="flex items-center">
           <button
             className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50"
             onClick={() => setSheetOpen(true)}
@@ -182,9 +191,9 @@ export default function AppShell() {
                 <p className="text-white/70 text-xs truncate mt-0.5">{user?.email ?? ''}</p>
               </div>
             </div>
-            {activeCondominiumName && (
+            {activeCondoName && (
               <p className="text-white/60 text-xs mt-3 truncate">
-                {activeCondominiumName}
+                {activeCondoName}
               </p>
             )}
           </SheetHeader>
