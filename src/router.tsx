@@ -14,11 +14,9 @@ import CondominiumsPage from './pages/admin/CondominiumsPage';
 import ResidentsPage from './pages/admin/ResidentsPage';
 
 function Bootstrap({ children }: { children: React.ReactNode }) {
-  const { setAuth, setInitialized, isInitializing } = useAuthStore((s) => ({
-    setAuth: s.setAuth,
-    setInitialized: s.setInitialized,
-    isInitializing: s.isInitializing,
-  }));
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const setInitialized = useAuthStore((s) => s.setInitialized);
+  const isInitializing = useAuthStore((s) => s.isInitializing);
 
   useEffect(() => {
     apiClient
@@ -51,10 +49,8 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
 }
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { token, isInitializing } = useAuthStore((s) => ({
-    token: s.accessToken,
-    isInitializing: s.isInitializing,
-  }));
+  const token = useAuthStore((s) => s.accessToken);
+  const isInitializing = useAuthStore((s) => s.isInitializing);
   if (isInitializing) return null;
   if (!token) return <Navigate to="/login" replace />;
   return <>{children}</>;
