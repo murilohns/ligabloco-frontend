@@ -28,7 +28,7 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
           data.accessToken,
           {
             id: payload.sub,
-            name: '',
+            name: payload.name ?? '',
             email: payload.email,
             isSuperAdmin: payload.isSuperAdmin ?? false,
             condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN') || null,
