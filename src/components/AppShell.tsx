@@ -102,28 +102,28 @@ export default function AppShell() {
         {/* Logo */}
         <span className="text-primary-foreground font-bold text-lg tracking-tight">Liga Bloco</span>
 
-        {/* Active condominium — center, desktop only */}
-        <div className="flex-1 hidden md:flex justify-center">
+        {/* Active condominium — center */}
+        <div className="flex-1 flex justify-center">
           {activeCondominiumName && (
-            condominiums.length > 1 ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
-                    <span className="truncate max-w-xs">{activeCondominiumName}</span>
-                    {switching !== null ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                    ) : (
-                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
+                  <span className="truncate max-w-xs">{activeCondominiumName}</span>
+                  {switching !== null ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              {condominiums.length > 0 && (
                 <DropdownMenuContent align="center" className="min-w-[200px]">
                   {condominiums.map((condo, index) => (
                     <div key={condo.id}>
                       {index > 0 && <DropdownMenuSeparator />}
                       <DropdownMenuItem
                         onClick={() => handleSwitch(condo.id)}
-                        disabled={switching === condo.id}
+                        disabled={switching === condo.id || condo.id === activeCondominiumId}
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <Check
@@ -134,12 +134,8 @@ export default function AppShell() {
                     </div>
                   ))}
                 </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <span className="text-primary-foreground/70 text-sm truncate max-w-xs">
-                {activeCondominiumName}
-              </span>
-            )
+              )}
+            </DropdownMenu>
           )}
         </div>
 
