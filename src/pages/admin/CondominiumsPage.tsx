@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Search } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
-import { unmaskDocument, isValidDocument, lookupCnpj } from '@/lib/cnpj';
+import { unmaskDocument, maskDocument, isValidDocument, lookupCnpj } from '@/lib/cnpj';
 import { MaskedDocumentInput } from '@/components/MaskedDocumentInput';
 import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,12 @@ interface Condominium {
   id: string;
   name: string;
   document: string;
-  address: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
   access_code: string;
   is_active: boolean;
 }
@@ -66,10 +71,15 @@ interface Member {
 const createCondominiumSchema = z.object({
   document: z
     .string()
-    .refine(isValidDocument, { message: 'Documento inválido — informe os 14 caracteres' }),
-  name: z.string().min(3, 'Nome obrigatório'),
-  address: z.string().min(3, 'Endereço obrigatório'),
-  access_code: z.string().min(1, 'Código de acesso obrigatório').max(50),
+    .refine(isValidDocument, { message: 'Documento invalido — informe os 14 caracteres' }),
+  name: z.string().min(3, 'Nome obrigatorio'),
+  street: z.string().min(1, 'Rua obrigatoria'),
+  number: z.string().min(1, 'Numero obrigatorio'),
+  complement: z.string().optional(),
+  neighborhood: z.string().min(1, 'Bairro obrigatorio'),
+  city: z.string().min(1, 'Cidade obrigatoria'),
+  state: z.string().length(2, 'UF deve ter 2 caracteres'),
+  access_code: z.string().min(1, 'Codigo de acesso obrigatorio').max(50),
 });
 
 type CreateCondominiumValues = z.infer<typeof createCondominiumSchema>;
@@ -112,7 +122,7 @@ interface CreateFormProps {
 function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
   const form = useForm<CreateCondominiumValues>({
     resolver: zodResolver(createCondominiumSchema),
-    defaultValues: { document: '', name: '', address: '', access_code: '' },
+    defaultValues: { document: '', name: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', access_code: '' },
   });
 
   const { isSubmitting } = form.formState;
@@ -149,14 +159,13 @@ function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
                       // D-05: silent prefill; failures swallow so the user can type manually
                       try {
                         const result = await lookupCnpj(unmasked);
-                        if (result.name) {
-                          form.setValue('name', result.name, { shouldValidate: true });
-                        }
-                        if (result.address) {
-                          form.setValue('address', result.address, {
-                            shouldValidate: true,
-                          });
-                        }
+                        if (result.name) form.setValue('name', result.name, { shouldValidate: true });
+                        if (result.street) form.setValue('street', result.street, { shouldValidate: true });
+                        if (result.number) form.setValue('number', result.number, { shouldValidate: true });
+                        if (result.neighborhood) form.setValue('neighborhood', result.neighborhood, { shouldValidate: true });
+                        if (result.city) form.setValue('city', result.city, { shouldValidate: true });
+                        if (result.state) form.setValue('state', result.state, { shouldValidate: true });
+                        if (result.complement) form.setValue('complement', result.complement, { shouldValidate: true });
                         if (liveRegionRef.current) {
                           liveRegionRef.current.textContent =
                             'Dados preenchidos automaticamente';
@@ -188,19 +197,60 @@ function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Endereço</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 gap-4">
+            <FormField control={form.control} name="street"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rua</FormLabel>
+                  <FormControl><Input {...field} placeholder="Ex: Rua das Flores" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField control={form.control} name="number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Numero</FormLabel>
+                    <FormControl><Input {...field} placeholder="100" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              <FormField control={form.control} name="complement"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Complemento</FormLabel>
+                    <FormControl><Input {...field} placeholder="Bloco A, Apt 101" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+            </div>
+            <FormField control={form.control} name="neighborhood"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            <div className="grid grid-cols-[1fr_80px] gap-4">
+              <FormField control={form.control} name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cidade</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              <FormField control={form.control} name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UF</FormLabel>
+                    <FormControl><Input {...field} maxLength={2} placeholder="SP" className="uppercase" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+            </div>
+          </div>
           <FormField
             control={form.control}
             name="access_code"
@@ -440,13 +490,13 @@ export default function CondominiumsPage() {
               filteredCondominiums.map((condo) => (
                 <TableRow
                   key={condo.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Entrar no condomínio ${condo.name}`}
-                  className="cursor-pointer hover:bg-primary/5"
-                  onClick={() => handleImpersonate(condo.id, condo.name)}
+                  role={condo.is_active ? "button" : undefined}
+                  tabIndex={condo.is_active ? 0 : undefined}
+                  aria-label={condo.is_active ? `Entrar no condominio ${condo.name}` : undefined}
+                  className={`${condo.is_active ? 'cursor-pointer hover:bg-primary/5' : 'opacity-50 cursor-not-allowed'}`}
+                  onClick={() => condo.is_active && handleImpersonate(condo.id, condo.name)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (condo.is_active && (e.key === 'Enter' || e.key === ' ')) {
                       e.preventDefault();
                       handleImpersonate(condo.id, condo.name);
                     }
@@ -454,10 +504,13 @@ export default function CondominiumsPage() {
                 >
                   <TableCell className="text-base">{condo.name}</TableCell>
                   <TableCell className="text-[14px] text-muted-foreground font-mono">
-                    {condo.document ?? '—'}
+                    {condo.document ? maskDocument(condo.document) : '—'}
                   </TableCell>
                   <TableCell className="text-[14px] text-muted-foreground">
-                    {condo.address}
+                    {[condo.street, condo.number].filter(Boolean).join(', ')}
+                    {condo.neighborhood ? ` — ${condo.neighborhood}` : ''}
+                    {condo.city ? `, ${condo.city}` : ''}
+                    {condo.state ? `/${condo.state}` : ''}
                   </TableCell>
                   <TableCell>
                     {condo.is_active ? (
