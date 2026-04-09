@@ -146,10 +146,10 @@ export const router = createBrowserRouter([
           </RequireRole>
         ),
       },
+
+      // Default redirect & catch-all — inside Bootstrap so auth state is resolved
+      { path: '/', element: <Navigate to="/dashboard" replace /> },
+      { path: '*', element: <Navigate to="/dashboard" replace /> },
     ],
   },
-
-  // Default redirect
-  { path: '/', element: <Navigate to="/login" replace /> },
-  { path: '*', element: <Navigate to="/dashboard" replace /> },
 ]);
