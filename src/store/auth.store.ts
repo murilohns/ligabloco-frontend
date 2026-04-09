@@ -16,6 +16,7 @@ interface AuthState {
   isInitializing: boolean;
   setAuth: (token: string, user: User, condominiumId: string, condominiumName?: string) => void;
   updateToken: (token: string, condominiumId: string, condominiumName?: string, user?: Partial<User>) => void;
+  clearTenantContext: (accessToken: string) => void;
   clearAuth: () => void;
   setInitialized: () => void;
 }
@@ -35,6 +36,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       activeCondominiumName: activeCondominiumName ?? state.activeCondominiumName,
       user: user ? { ...state.user, ...user } as User : state.user,
     })),
+  clearTenantContext: (accessToken) =>
+    set({
+      accessToken,
+      activeCondominiumId: null,     // RESEARCH Pitfall 2: null matches the store type `string | null`
+      activeCondominiumName: null,
+    }),
   clearAuth: () =>
     set({ accessToken: null, user: null, activeCondominiumId: null, activeCondominiumName: null, isInitializing: false }),
   setInitialized: () => set({ isInitializing: false }),
