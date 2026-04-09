@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2 } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
@@ -51,7 +51,8 @@ export default function AppShell() {
   const [isExiting, setIsExiting] = useState(false);
 
   const isImpersonating =
-    user?.isSuperAdmin === true &&
+    user?.adminRole !== null &&
+    user?.adminRole !== undefined &&
     !!activeCondominiumId &&
     activeCondominiumId !== '';
 
@@ -134,6 +135,11 @@ export default function AppShell() {
             <span className="truncate text-sm font-medium">
               Visualizando como admin de {activeCondominiumName ?? 'condomínio'}
             </span>
+            {user?.adminRole === 'READ_ONLY_ADMIN' && (
+              <span className="shrink-0 text-xs font-semibold bg-amber-800/20 text-amber-950 border border-amber-800/30 rounded px-1.5 py-0.5">
+                Somente leitura
+              </span>
+            )}
           </div>
           <Button
             variant="outline"
@@ -159,7 +165,7 @@ export default function AppShell() {
         {/* Logo + condominium switcher */}
         <span className="text-primary-foreground font-bold text-lg tracking-tight shrink-0">Liga Bloco</span>
 
-        {user?.isSuperAdmin !== true && activeCondoName && (
+        {user?.adminRole === null && activeCondoName && (
           <>
             <span className="text-primary-foreground/30 text-lg shrink-0">|</span>
             {condominiums.length > 1 ? (
@@ -260,7 +266,7 @@ export default function AppShell() {
               <User className="h-5 w-5 text-muted-foreground shrink-0" />
               Meu Perfil
             </button>
-{user?.isSuperAdmin && (
+{user?.adminRole !== null && (
               <button
                 onClick={() => navigateTo('/admin/condominiums')}
                 className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
@@ -269,7 +275,16 @@ export default function AppShell() {
                 Condomínios
               </button>
             )}
-            {(user?.condoRole === 'CONDO_ADMIN' || user?.isSuperAdmin) && (
+            {user?.adminRole === 'SUPER_ADMIN' && (
+              <button
+                onClick={() => navigateTo('/admin/platform')}
+                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
+              >
+                <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0" />
+                Plataforma
+              </button>
+            )}
+            {(user?.condoRole === 'CONDO_ADMIN' || user?.adminRole !== null) && (
               <button
                 onClick={() => navigateTo('/admin/residents')}
                 className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
@@ -278,7 +293,7 @@ export default function AppShell() {
                 Moradores
               </button>
             )}
-            {user?.condoRole === 'CONDO_ADMIN' && !user?.isSuperAdmin && activeCondominiumId && (
+            {user?.condoRole === 'CONDO_ADMIN' && user?.adminRole === null && activeCondominiumId && (
               <button
                 onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)}
                 className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
