@@ -13,6 +13,7 @@ import DashboardPage from './pages/DashboardPage';
 import CondominiumsPage from './pages/admin/CondominiumsPage';
 import CondominiumInfoPage from './pages/admin/CondominiumInfoPage';
 import ResidentsPage from './pages/admin/ResidentsPage';
+import PlatformPage from './pages/admin/PlatformPage';
 
 function Bootstrap({ children }: { children: React.ReactNode }) {
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -33,7 +34,7 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
             id: payload.sub,
             name: payload.name ?? '',
             email: payload.email,
-            isSuperAdmin: payload.isSuperAdmin ?? false,
+            adminRole: (payload.adminRole as 'SUPER_ADMIN' | 'READ_ONLY_ADMIN' | null) ?? null,
             condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN') || null,
           },
           payload.condominiumId ?? '',
@@ -68,11 +69,11 @@ function RequireRole({
   children: React.ReactNode;
 }) {
   const user = useAuthStore((s) => s.user);
-  if (role === 'superAdmin' && !user?.isSuperAdmin) return <Navigate to="/dashboard" replace />;
-  if (role === 'condoAdmin' && user?.condoRole !== 'CONDO_ADMIN' && !user?.isSuperAdmin) {
+  if (role === 'superAdmin' && user?.adminRole !== 'SUPER_ADMIN') return <Navigate to="/dashboard" replace />;
+  if (role === 'condoAdmin' && user?.condoRole !== 'CONDO_ADMIN' && user?.adminRole === null) {
     return <Navigate to="/dashboard" replace />;
   }
-  if (role === 'anyAdmin' && user?.condoRole !== 'CONDO_ADMIN' && !user?.isSuperAdmin) {
+  if (role === 'anyAdmin' && user?.condoRole !== 'CONDO_ADMIN' && user?.adminRole === null) {
     return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
@@ -87,7 +88,8 @@ function RequireImpersonationContext({ children }: { children: React.ReactNode }
   const location = useLocation();
 
   const needsRedirect =
-    user?.isSuperAdmin === true && (!activeCondominiumId || activeCondominiumId === '');
+    user?.adminRole !== null && user?.adminRole !== undefined &&
+    (!activeCondominiumId || activeCondominiumId === '');
 
   useEffect(() => {
     if (needsRedirect) {
@@ -143,6 +145,14 @@ export const router = createBrowserRouter([
             <RequireImpersonationContext>
               <ResidentsPage />
             </RequireImpersonationContext>
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/admin/platform',
+        element: (
+          <RequireRole role="superAdmin">
+            <PlatformPage />
           </RequireRole>
         ),
       },

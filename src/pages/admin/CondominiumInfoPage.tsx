@@ -78,7 +78,7 @@ export default function CondominiumInfoPage() {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   // D-20: Zona de perigo and edit mode gated on TRUE super-admin, regardless of impersonation.
-  const isSuperAdmin = user?.isSuperAdmin === true;
+  const isSuperAdmin = user?.adminRole === 'SUPER_ADMIN';
 
   const {
     data: condo,

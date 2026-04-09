@@ -5,7 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  isSuperAdmin: boolean;
+  adminRole: 'SUPER_ADMIN' | 'READ_ONLY_ADMIN' | null;  // D-25: replaces isSuperAdmin
   condoRole: 'RESIDENT' | 'CONDO_ADMIN' | null;
 }
 

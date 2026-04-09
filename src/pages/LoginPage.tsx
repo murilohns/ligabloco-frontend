@@ -28,7 +28,7 @@ type FormValues = z.infer<typeof schema>;
 
 interface LoginResponse {
   accessToken: string;
-  user: { id: string; name: string; email: string; isSuperAdmin: boolean };
+  user: { id: string; name: string; email: string; adminRole: 'SUPER_ADMIN' | 'READ_ONLY_ADMIN' | null };
   condominiumId: string;
   condoRole: 'RESIDENT' | 'CONDO_ADMIN' | null;
 }
@@ -57,7 +57,7 @@ export default function LoginPage() {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
-          isSuperAdmin: data.user.isSuperAdmin ?? false,
+          adminRole: data.user.adminRole ?? null,
           condoRole: data.condoRole ?? null,
         },
         data.condominiumId,

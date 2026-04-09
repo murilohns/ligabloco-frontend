@@ -312,7 +312,7 @@ export default function CondominiumsPage() {
 
   // ─── Defense in depth: only render for super-admin (T-BAC-01) ──────────
 
-  if (currentUser && !currentUser.isSuperAdmin) {
+  if (currentUser && currentUser.adminRole === null) {
     return null;
   }
 
