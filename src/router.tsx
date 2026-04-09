@@ -25,6 +25,8 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
       .then(({ data }) => {
         // Decode JWT payload (base64url, middle segment) — no library needed
         const payload = JSON.parse(atob(data.accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        // Preserve persisted condominium name (JWT does not contain it)
+        const persistedName = useAuthStore.getState().activeCondominiumName;
         setAuth(
           data.accessToken,
           {
@@ -35,6 +37,7 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
             condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN') || null,
           },
           payload.condominiumId ?? '',
+          persistedName ?? undefined,
         );
       })
       .catch(() => {

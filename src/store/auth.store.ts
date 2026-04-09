@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface User {
   id: string;
@@ -21,28 +22,39 @@ interface AuthState {
   setInitialized: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
-  user: null,
-  activeCondominiumId: null,
-  activeCondominiumName: null,
-  isInitializing: true,
-  setAuth: (accessToken, user, activeCondominiumId, activeCondominiumName) =>
-    set({ accessToken, user, activeCondominiumId, activeCondominiumName: activeCondominiumName ?? null }),
-  updateToken: (accessToken, activeCondominiumId, activeCondominiumName, user) =>
-    set((state) => ({
-      accessToken,
-      activeCondominiumId,
-      activeCondominiumName: activeCondominiumName ?? state.activeCondominiumName,
-      user: user ? { ...state.user, ...user } as User : state.user,
-    })),
-  clearTenantContext: (accessToken) =>
-    set({
-      accessToken,
-      activeCondominiumId: null,     // RESEARCH Pitfall 2: null matches the store type `string | null`
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      accessToken: null,
+      user: null,
+      activeCondominiumId: null,
       activeCondominiumName: null,
+      isInitializing: true,
+      setAuth: (accessToken, user, activeCondominiumId, activeCondominiumName) =>
+        set({ accessToken, user, activeCondominiumId, activeCondominiumName: activeCondominiumName ?? null }),
+      updateToken: (accessToken, activeCondominiumId, activeCondominiumName, user) =>
+        set((state) => ({
+          accessToken,
+          activeCondominiumId,
+          activeCondominiumName: activeCondominiumName ?? state.activeCondominiumName,
+          user: user ? { ...state.user, ...user } as User : state.user,
+        })),
+      clearTenantContext: (accessToken) =>
+        set({
+          accessToken,
+          activeCondominiumId: null,     // RESEARCH Pitfall 2: null matches the store type `string | null`
+          activeCondominiumName: null,
+        }),
+      clearAuth: () =>
+        set({ accessToken: null, user: null, activeCondominiumId: null, activeCondominiumName: null, isInitializing: false }),
+      setInitialized: () => set({ isInitializing: false }),
     }),
-  clearAuth: () =>
-    set({ accessToken: null, user: null, activeCondominiumId: null, activeCondominiumName: null, isInitializing: false }),
-  setInitialized: () => set({ isInitializing: false }),
-}));
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        activeCondominiumId: state.activeCondominiumId,
+        activeCondominiumName: state.activeCondominiumName,
+      }),
+    },
+  ),
+);
