@@ -4,8 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
+import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -252,7 +253,7 @@ function EditResidentForm({ defaultValues, onSubmit, serverError }: EditFormProp
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Papel</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione o papel" />
@@ -285,20 +286,26 @@ function EditResidentForm({ defaultValues, onSubmit, serverError }: EditFormProp
 
 // ─── Main page ─────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 10;
+
 export default function ResidentsPage() {
   const queryClient = useQueryClient();
+  const { activeCondominiumName, activeCondominiumId, accessToken } = useAuthStore();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [editServerError, setEditServerError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
 
   const { data: residents = [], isLoading } = useQuery<UserCondominium[]>({
-    queryKey: ['admin-residents'],
+    queryKey: ['admin-residents', activeCondominiumId],
     queryFn: () => apiClient.get('/admin/residents').then((r) => r.data),
+    enabled: !!accessToken && !!activeCondominiumId,
   });
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -306,6 +313,17 @@ export default function ResidentsPage() {
   function invalidate() {
     void queryClient.invalidateQueries({ queryKey: ['admin-residents'] });
   }
+
+  // ─── Search + pagination ──────────────────────────────────────────────────
+
+  const filtered = residents.filter((r) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return r.user.name.toLowerCase().includes(q) || r.user.email.toLowerCase().includes(q);
+  });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const effectivePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((effectivePage - 1) * PAGE_SIZE, effectivePage * PAGE_SIZE);
 
   // ─── Create handler ───────────────────────────────────────────────────────
 
@@ -339,6 +357,18 @@ export default function ResidentsPage() {
     }
   }
 
+  // ─── Promote/demote handler ───────────────────────────────────────────────
+
+  async function handlePromote(ucId: string, newRole: 'RESIDENT' | 'CONDO_ADMIN') {
+    try {
+      await apiClient.patch(`/admin/residents/${ucId}`, { role: newRole });
+      invalidate();
+      toast(newRole === 'CONDO_ADMIN' ? 'Morador promovido a administrador' : 'Papel de administrador revogado');
+    } catch {
+      toast('Algo deu errado. Tente novamente em alguns instantes.');
+    }
+  }
+
   // ─── Remove handler ───────────────────────────────────────────────────────
 
   async function handleRemove() {
@@ -361,7 +391,7 @@ export default function ResidentsPage() {
   return (
     <div>
       {/* Header row */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-1">
         <h1 className="text-[20px] font-semibold font-heading">Moradores</h1>
         <Button
           onClick={() => {
@@ -371,6 +401,22 @@ export default function ResidentsPage() {
         >
           Cadastrar morador
         </Button>
+      </div>
+      {activeCondominiumName && (
+        <p className="text-[13px] text-muted-foreground mb-5">
+          Condomínio: <span className="font-medium">{activeCondominiumName}</span>
+        </p>
+      )}
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder="Buscar por nome ou e-mail…"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          className="pl-9"
+        />
       </div>
 
       {/* Table */}
@@ -400,8 +446,16 @@ export default function ResidentsPage() {
               </TableRow>
             )}
 
+            {!isLoading && residents.length > 0 && filtered.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10">
+                  <p className="text-[14px] text-muted-foreground">Nenhum morador encontrado para "{search}"</p>
+                </TableCell>
+              </TableRow>
+            )}
+
             {!isLoading &&
-              residents.map((resident) => (
+              paginated.map((resident) => (
                 <TableRow key={resident.id}>
                   <TableCell className="text-base">{resident.user.name}</TableCell>
                   <TableCell className="text-[14px] text-muted-foreground">
@@ -426,6 +480,24 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 justify-end">
+                      {resident.role === 'CONDO_ADMIN' ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground"
+                          onClick={() => handlePromote(resident.id, 'RESIDENT')}
+                        >
+                          Revogar Admin
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePromote(resident.id, 'CONDO_ADMIN')}
+                        >
+                          Tornar Admin
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
@@ -451,6 +523,33 @@ export default function ResidentsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-[13px] text-muted-foreground">
+            {filtered.length} morador{filtered.length !== 1 ? 'es' : ''} — página {effectivePage} de {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={effectivePage <= 1}
+              onClick={() => setPage(effectivePage - 1)}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={effectivePage >= totalPages}
+              onClick={() => setPage(effectivePage + 1)}
+            >
+              Próxima
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Create Dialog */}
       <Dialog
