@@ -26,7 +26,9 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
 import { apiClient } from '../lib/axios';
 
@@ -41,10 +43,32 @@ interface Condominium {
 
 export default function AppShell() {
   const navigate = useNavigate();
-  const { user, activeCondominiumName, activeCondominiumId, updateToken, clearAuth } = useAuthStore();
+  const { user, activeCondominiumName, activeCondominiumId, updateToken, clearAuth, clearTenantContext } = useAuthStore();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [switching, setSwitching] = useState<string | null>(null);
+  const [isExiting, setIsExiting] = useState(false);
+
+  const isImpersonating =
+    user?.isSuperAdmin === true &&
+    !!activeCondominiumId &&
+    activeCondominiumId !== '';
+
+  const handleExitImpersonation = async () => {
+    if (isExiting) return;
+    setIsExiting(true);
+    const loadingId = toast.loading('Saindo da visualização…');
+    try {
+      const { data } = await apiClient.post<{ accessToken: string }>('/auth/exit-impersonation');
+      clearTenantContext(data.accessToken);
+      toast.success('Você voltou à visão de super-admin', { id: loadingId });
+      navigate('/admin/condominiums');
+    } catch {
+      toast.error('Não foi possível sair da visualização. Tente novamente.', { id: loadingId });
+    } finally {
+      setIsExiting(false);
+    }
+  };
 
   const { data: condominiums = [] } = useQuery<Condominium[]>({
     queryKey: ['condominiums'],
@@ -97,6 +121,31 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-background">
+      {isImpersonating && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="w-full bg-amber-500 text-amber-950 py-3 px-4 md:px-6 flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <Eye className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="truncate text-sm font-medium">
+              Visualizando como admin de {activeCondominiumName ?? 'condomínio'}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExitImpersonation}
+            disabled={isExiting}
+            className="h-10 border-amber-800 text-amber-950 hover:bg-amber-400 bg-transparent"
+            aria-label="Sair da visualização"
+          >
+            <LogOut className="h-4 w-4 mr-2" aria-hidden />
+            {isExiting ? 'Saindo…' : 'Sair da visualização'}
+          </Button>
+        </div>
+      )}
       {/* Header */}
       <header
         className="h-14 border-b border-violet-200/40 flex items-center px-4 gap-4 sticky top-0 z-50"
@@ -108,20 +157,18 @@ export default function AppShell() {
         {/* Logo + condominium switcher */}
         <span className="text-primary-foreground font-bold text-lg tracking-tight shrink-0">Liga Bloco</span>
 
-        {activeCondoName && (
+        {user?.isSuperAdmin !== true && activeCondoName && (
           <>
             <span className="text-primary-foreground/30 text-lg shrink-0">|</span>
             {condominiums.length > 1 ? (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
-                    <span className="truncate max-w-[180px]">{activeCondoName}</span>
-                    {switching !== null ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                    ) : (
-                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                  </button>
+                <DropdownMenuTrigger className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
+                  <span className="truncate max-w-[180px]">{activeCondoName}</span>
+                  {switching !== null ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                  )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="min-w-[200px]">
                   {condominiums.map((condo, index) => (
