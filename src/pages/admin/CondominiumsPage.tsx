@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Search } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
-import { unmaskDocument } from '@/lib/cnpj';
+import { unmaskDocument, isValidDocument, lookupCnpj } from '@/lib/cnpj';
+import { MaskedDocumentInput } from '@/components/MaskedDocumentInput';
 import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,6 +64,9 @@ interface Member {
 // ─── Create schema ─────────────────────────────────────────────────────────
 
 const createCondominiumSchema = z.object({
+  document: z
+    .string()
+    .refine(isValidDocument, { message: 'Documento inválido — informe os 14 caracteres' }),
   name: z.string().min(3, 'Nome obrigatório'),
   address: z.string().min(3, 'Endereço obrigatório'),
   access_code: z.string().min(1, 'Código de acesso obrigatório').max(50),
@@ -108,13 +112,16 @@ interface CreateFormProps {
 function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
   const form = useForm<CreateCondominiumValues>({
     resolver: zodResolver(createCondominiumSchema),
-    defaultValues: { name: '', address: '', access_code: '' },
+    defaultValues: { document: '', name: '', address: '', access_code: '' },
   });
 
   const { isSubmitting } = form.formState;
+  const liveRegionRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
+      {/* sr-only live region for BrasilAPI prefill announcements (D-05 + a11y) */}
+      <div ref={liveRegionRef} className="sr-only" aria-live="polite" />
       {serverError && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{serverError}</AlertDescription>
@@ -122,6 +129,52 @@ function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
       )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="document"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CNPJ</FormLabel>
+                <FormControl>
+                  <MaskedDocumentInput
+                    id="document"
+                    name="document"
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                    onBlurValidate={(err) => {
+                      if (err) form.setError('document', { message: err });
+                      else form.clearErrors('document');
+                    }}
+                    onComplete={async (unmasked) => {
+                      // D-05: silent prefill; failures swallow so the user can type manually
+                      try {
+                        const result = await lookupCnpj(unmasked);
+                        if (result.name) {
+                          form.setValue('name', result.name, { shouldValidate: true });
+                        }
+                        if (result.address) {
+                          form.setValue('address', result.address, {
+                            shouldValidate: true,
+                          });
+                        }
+                        if (liveRegionRef.current) {
+                          liveRegionRef.current.textContent =
+                            'Dados preenchidos automaticamente';
+                        }
+                      } catch {
+                        // Silent per D-05 — user types manually
+                      }
+                    }}
+                    aria-describedby="document-helper document-error"
+                  />
+                </FormControl>
+                <p id="document-helper" className="text-sm text-muted-foreground">
+                  CNPJ pode conter letras e números.
+                </p>
+                <FormMessage id="document-error" />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="name"
@@ -229,11 +282,24 @@ export default function CondominiumsPage() {
       invalidate();
       toast('Condomínio criado com sucesso');
     } catch (err) {
-      const axiosErr = err as { response?: { status?: number } };
-      if (axiosErr?.response?.status === 409) {
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string | string[] } };
+      };
+      const status = axiosErr?.response?.status;
+      const rawMessage = axiosErr?.response?.data?.message;
+      const message = Array.isArray(rawMessage)
+        ? rawMessage.join(' ').toLowerCase()
+        : (rawMessage ?? '').toString().toLowerCase();
+      if (status === 409 && message.includes('document')) {
+        const msg = 'Já existe um condomínio com este CNPJ.';
+        setCreateServerError(msg);
+        toast.error(msg);
+      } else if (status === 409) {
         setCreateServerError('Este código de acesso já está em uso. Escolha outro.');
       } else {
-        setCreateServerError('Algo deu errado. Tente novamente em alguns instantes.');
+        setCreateServerError(
+          'Não foi possível salvar. Revise os campos e tente novamente.',
+        );
       }
     }
   }
