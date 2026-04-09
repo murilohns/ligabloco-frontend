@@ -314,12 +314,19 @@ export default function CondominiumsPage() {
         { condominiumId },
       );
       updateToken(data.accessToken, condominiumId, condominiumName);
+      queryClient.clear(); // CRITICAL: wipe stale tenant-scoped cache
       toast.success(`Agora você está visualizando ${condominiumName}`, { id: loadingId });
       navigate('/admin/residents');
-    } catch {
-      toast.error('Não foi possível entrar no condomínio. Tente novamente.', {
-        id: loadingId,
-      });
+    } catch (err) {
+      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      const msg = (axiosErr?.response?.data?.message ?? '').toLowerCase();
+      if (msg.includes('inativo') || msg.includes('inactive')) {
+        toast.error('Condomínio desativado.', { id: loadingId });
+      } else {
+        toast.error('Não foi possível entrar no condomínio. Tente novamente.', {
+          id: loadingId,
+        });
+      }
     }
   }
 

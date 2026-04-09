@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Sheet,
@@ -43,6 +43,7 @@ interface Condominium {
 
 export default function AppShell() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, activeCondominiumName, activeCondominiumId, updateToken, clearAuth, clearTenantContext } = useAuthStore();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -61,6 +62,7 @@ export default function AppShell() {
     try {
       const { data } = await apiClient.post<{ accessToken: string }>('/auth/exit-impersonation');
       clearTenantContext(data.accessToken);
+      queryClient.clear(); // wipe impersonated tenant data
       toast.success('Você voltou à visão de super-admin', { id: loadingId });
       navigate('/admin/condominiums');
     } catch {
