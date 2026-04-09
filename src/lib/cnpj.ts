@@ -1,9 +1,14 @@
 // To swap to another CNPJ provider, edit only this file.
 
 export interface CnpjResult {
-  document: string; // 14-char unmasked uppercase
-  name: string; // nome_fantasia || razao_social
-  address: string; // composed: "<logradouro>, <numero> — <bairro>, <municipio>/<uf>, CEP <cep>"
+  document: string;      // 14-char unmasked uppercase
+  name: string;          // nome_fantasia || razao_social
+  street: string;        // logradouro
+  number: string;        // numero
+  neighborhood: string;  // bairro
+  city: string;          // municipio
+  state: string;         // uf (2 chars)
+  complement: string;    // complemento (empty string if absent)
 }
 
 /**
@@ -48,17 +53,18 @@ export async function lookupCnpj(rawDocument: string): Promise<CnpjResult> {
     bairro?: string;
     municipio?: string;
     uf?: string;
+    complemento?: string;
     cep?: string;
   };
 
-  const name = (data.nome_fantasia?.trim() || data.razao_social?.trim() || '').toString();
-  const addressParts = [
-    [data.logradouro, data.numero].filter(Boolean).join(', '),
-    data.bairro,
-    [data.municipio, data.uf].filter(Boolean).join('/'),
-    data.cep ? `CEP ${data.cep}` : null,
-  ].filter(Boolean);
-  const address = addressParts.join(' — ');
-
-  return { document: unmasked, name, address };
+  return {
+    document: unmasked,
+    name: (data.nome_fantasia?.trim() || data.razao_social?.trim() || ''),
+    street: (data.logradouro?.trim() || ''),
+    number: (data.numero?.trim() || ''),
+    neighborhood: (data.bairro?.trim() || ''),
+    city: (data.municipio?.trim() || ''),
+    state: (data.uf?.trim() || ''),
+    complement: (data.complemento?.trim() || ''),
+  };
 }
