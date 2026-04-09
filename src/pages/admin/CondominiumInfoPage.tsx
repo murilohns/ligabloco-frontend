@@ -44,19 +44,29 @@ import { isValidDocument, maskDocument, lookupCnpj } from '@/lib/cnpj';
 interface CondominiumDetail {
   id: string;
   name: string;
-  address: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
   document: string;
   access_code: string;
   is_active: boolean;
 }
 
 const editSchema = z.object({
-  name: z.string().min(3, 'Nome obrigatório'),
-  address: z.string().min(3, 'Endereço obrigatório'),
+  name: z.string().min(3, 'Nome obrigatorio'),
+  street: z.string().min(1, 'Rua obrigatoria'),
+  number: z.string().min(1, 'Numero obrigatorio'),
+  complement: z.string().optional(),
+  neighborhood: z.string().min(1, 'Bairro obrigatorio'),
+  city: z.string().min(1, 'Cidade obrigatoria'),
+  state: z.string().length(2, 'UF deve ter 2 caracteres'),
   document: z
     .string()
-    .refine(isValidDocument, { message: 'Documento inválido — informe os 14 caracteres' }),
-  access_code: z.string().min(3, 'Código de acesso obrigatório'),
+    .refine(isValidDocument, { message: 'Documento invalido — informe os 14 caracteres' }),
+  access_code: z.string().min(3, 'Codigo de acesso obrigatorio'),
 });
 type EditFormValues = z.infer<typeof editSchema>;
 
@@ -85,14 +95,19 @@ export default function CondominiumInfoPage() {
 
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editSchema),
-    defaultValues: { name: '', address: '', document: '', access_code: '' },
+    defaultValues: { name: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', document: '', access_code: '' },
   });
 
   useEffect(() => {
     if (condo) {
       form.reset({
         name: condo.name,
-        address: condo.address,
+        street: condo.street,
+        number: condo.number,
+        complement: condo.complement ?? '',
+        neighborhood: condo.neighborhood,
+        city: condo.city,
+        state: condo.state,
         document: condo.document,
         access_code: condo.access_code,
       });
@@ -133,12 +148,24 @@ export default function CondominiumInfoPage() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Condomínio desativado');
+      toast.success('Condominio desativado');
       queryClient.invalidateQueries({ queryKey: ['admin-condominium', id] });
       queryClient.invalidateQueries({ queryKey: ['admin-condominiums'] });
-      navigate('/admin/condominiums');
     },
-    onError: () => toast.error('Não foi possível desativar. Tente novamente.'),
+    onError: () => toast.error('Nao foi possivel desativar. Tente novamente.'),
+  });
+
+  const reactivateMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.patch(`/admin/condominiums/${id}/reactivate`);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Condominio reativado');
+      queryClient.invalidateQueries({ queryKey: ['admin-condominium', id] });
+      queryClient.invalidateQueries({ queryKey: ['admin-condominiums'] });
+    },
+    onError: () => toast.error('Nao foi possivel reativar. Tente novamente.'),
   });
 
   if (isLoading) return <div className="p-6">Carregando…</div>;
@@ -211,12 +238,13 @@ export default function CondominiumInfoPage() {
                           onComplete={async (unmasked) => {
                             try {
                               const r = await lookupCnpj(unmasked);
-                              if (r.name)
-                                form.setValue('name', r.name, { shouldValidate: true });
-                              if (r.address)
-                                form.setValue('address', r.address, {
-                                  shouldValidate: true,
-                                });
+                              if (r.name) form.setValue('name', r.name, { shouldValidate: true });
+                              if (r.street) form.setValue('street', r.street, { shouldValidate: true });
+                              if (r.number) form.setValue('number', r.number, { shouldValidate: true });
+                              if (r.neighborhood) form.setValue('neighborhood', r.neighborhood, { shouldValidate: true });
+                              if (r.city) form.setValue('city', r.city, { shouldValidate: true });
+                              if (r.state) form.setValue('state', r.state, { shouldValidate: true });
+                              if (r.complement) form.setValue('complement', r.complement, { shouldValidate: true });
                             } catch {
                               /* silent per D-05 */
                             }
@@ -231,19 +259,60 @@ export default function CondominiumInfoPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Endereço</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField control={form.control} name="street"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rua</FormLabel>
+                        <FormControl><Input {...field} placeholder="Ex: Rua das Flores" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Numero</FormLabel>
+                          <FormControl><Input {...field} placeholder="100" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    <FormField control={form.control} name="complement"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Complemento</FormLabel>
+                          <FormControl><Input {...field} placeholder="Bloco A, Apt 101" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                  </div>
+                  <FormField control={form.control} name="neighborhood"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bairro</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  <div className="grid grid-cols-[1fr_80px] gap-4">
+                    <FormField control={form.control} name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cidade</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    <FormField control={form.control} name="state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>UF</FormLabel>
+                          <FormControl><Input {...field} maxLength={2} placeholder="SP" className="uppercase" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                  </div>
+                </div>
                 <FormField
                   control={form.control}
                   name="access_code"
@@ -289,8 +358,14 @@ export default function CondominiumInfoPage() {
                 <dd className="text-sm">{maskDocument(condo.document)}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-muted-foreground">Endereço</dt>
-                <dd className="text-sm">{condo.address}</dd>
+                <dt className="text-sm font-medium text-muted-foreground">Endereco</dt>
+                <dd className="text-sm">
+                  {[condo.street, condo.number].filter(Boolean).join(', ')}
+                  {condo.complement ? ` (${condo.complement})` : ''}
+                  {condo.neighborhood ? ` — ${condo.neighborhood}` : ''}
+                  {condo.city ? `, ${condo.city}` : ''}
+                  {condo.state ? `/${condo.state}` : ''}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Código de acesso</dt>
@@ -320,41 +395,51 @@ export default function CondominiumInfoPage() {
                 <CardTitle className="font-heading">Zona de perigo</CardTitle>
               </div>
               <CardDescription>
-                Desativar o condomínio impede novos acessos de todos os moradores. A ação
-                pode ser revertida.
+                {condo.is_active
+                  ? 'Desativar o condominio impede novos acessos de todos os moradores. A acao pode ser revertida.'
+                  : 'Este condominio esta desativado. Reativar permitira que os moradores acessem novamente.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-end">
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <Button
-                      variant="destructive"
-                      disabled={!condo.is_active || deactivateMutation.isPending}
-                    >
-                      Desativar condomínio
-                    </Button>
-                  }
-                />
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Desativar {condo.name}?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Os moradores perderão acesso até o condomínio ser reativado. Nenhum
-                      dado será apagado.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => deactivateMutation.mutate()}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Desativar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              {condo.is_active ? (
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={
+                      <Button
+                        variant="destructive"
+                        disabled={deactivateMutation.isPending}
+                      >
+                        Desativar condominio
+                      </Button>
+                    }
+                  />
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Desativar {condo.name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Os moradores perderao acesso ate o condominio ser reativado. Nenhum
+                        dado sera apagado.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deactivateMutation.mutate()}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Desativar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : (
+                <Button
+                  onClick={() => reactivateMutation.mutate()}
+                  disabled={reactivateMutation.isPending}
+                >
+                  {reactivateMutation.isPending ? 'Reativando...' : 'Reativar condominio'}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </>

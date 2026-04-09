@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
@@ -276,6 +276,15 @@ export default function AppShell() {
               >
                 <Users className="h-5 w-5 text-muted-foreground shrink-0" />
                 Moradores
+              </button>
+            )}
+            {user?.condoRole === 'CONDO_ADMIN' && !user?.isSuperAdmin && activeCondominiumId && (
+              <button
+                onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)}
+                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
+              >
+                <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
+                Informacoes do condominio
               </button>
             )}
             <Separator className="my-2" />
