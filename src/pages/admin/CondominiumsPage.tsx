@@ -287,6 +287,7 @@ export default function CondominiumsPage() {
   const navigate = useNavigate();
   const updateToken = useAuthStore((s) => s.updateToken);
   const currentUser = useAuthStore((s) => s.user);
+  const canWrite = currentUser?.adminRole === 'SUPER_ADMIN';
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -392,8 +393,11 @@ export default function CondominiumsPage() {
       setSelectedUserId(null);
       invalidate();
       toast('Administrador designado com sucesso');
-    } catch {
-      toast('Algo deu errado. Tente novamente em alguns instantes.');
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      toast.error(status === 403
+        ? 'Você não tem permissão para executar essa ação.'
+        : 'Algo deu errado. Tente novamente em alguns instantes.');
     }
   }
 
@@ -417,14 +421,16 @@ export default function CondominiumsPage() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-[20px] font-semibold font-heading">Condomínios</h1>
-        <Button
-          onClick={() => {
-            setCreateServerError(null);
-            setCreateOpen(true);
-          }}
-        >
-          Novo condomínio
-        </Button>
+        {canWrite && (
+          <Button
+            onClick={() => {
+              setCreateServerError(null);
+              setCreateOpen(true);
+            }}
+          >
+            Novo condomínio
+          </Button>
+        )}
       </div>
 
       {/* Search */}
@@ -531,17 +537,19 @@ export default function CondominiumsPage() {
                       >
                         Editar
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedUserId(null);
-                          setAssigningId(condo.id);
-                        }}
-                      >
-                        Designar admin
-                      </Button>
+                      {canWrite && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUserId(null);
+                            setAssigningId(condo.id);
+                          }}
+                        >
+                          Designar admin
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

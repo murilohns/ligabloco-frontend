@@ -290,7 +290,8 @@ const PAGE_SIZE = 10;
 
 export default function ResidentsPage() {
   const queryClient = useQueryClient();
-  const { activeCondominiumName, activeCondominiumId, accessToken } = useAuthStore();
+  const { activeCondominiumName, activeCondominiumId, accessToken, user } = useAuthStore();
+  const canWrite = user?.adminRole !== 'READ_ONLY_ADMIN';
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -338,8 +339,11 @@ export default function ResidentsPage() {
       } else {
         toast('Morador cadastrado com sucesso');
       }
-    } catch {
-      setServerError('Algo deu errado. Tente novamente em alguns instantes.');
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      setServerError(status === 403
+        ? 'Você não tem permissão para executar essa ação.'
+        : 'Algo deu errado. Tente novamente em alguns instantes.');
     }
   }
 
@@ -352,8 +356,11 @@ export default function ResidentsPage() {
       setEditingId(null);
       invalidate();
       toast('Alterações salvas com sucesso');
-    } catch {
-      setEditServerError('Algo deu errado. Tente novamente em alguns instantes.');
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      setEditServerError(status === 403
+        ? 'Você não tem permissão para executar essa ação.'
+        : 'Algo deu errado. Tente novamente em alguns instantes.');
     }
   }
 
@@ -364,8 +371,11 @@ export default function ResidentsPage() {
       await apiClient.patch(`/admin/residents/${ucId}`, { role: newRole });
       invalidate();
       toast(newRole === 'CONDO_ADMIN' ? 'Morador promovido a administrador' : 'Papel de administrador revogado');
-    } catch {
-      toast('Algo deu errado. Tente novamente em alguns instantes.');
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      toast.error(status === 403
+        ? 'Você não tem permissão para executar essa ação.'
+        : 'Algo deu errado. Tente novamente em alguns instantes.');
     }
   }
 
@@ -377,8 +387,11 @@ export default function ResidentsPage() {
       setRemovingId(null);
       invalidate();
       toast('Morador removido do condomínio');
-    } catch {
-      toast('Algo deu errado. Tente novamente em alguns instantes.');
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      toast.error(status === 403
+        ? 'Você não tem permissão para executar essa ação.'
+        : 'Algo deu errado. Tente novamente em alguns instantes.');
     }
   }
 
@@ -393,14 +406,16 @@ export default function ResidentsPage() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-1">
         <h1 className="text-[20px] font-semibold font-heading">Moradores</h1>
-        <Button
-          onClick={() => {
-            setServerError(null);
-            setCreateOpen(true);
-          }}
-        >
-          Cadastrar morador
-        </Button>
+        {canWrite && (
+          <Button
+            onClick={() => {
+              setServerError(null);
+              setCreateOpen(true);
+            }}
+          >
+            Cadastrar morador
+          </Button>
+        )}
       </div>
       {activeCondominiumName && (
         <p className="text-[13px] text-muted-foreground mb-5">
@@ -480,7 +495,7 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 justify-end">
-                      {resident.role === 'CONDO_ADMIN' ? (
+                      {canWrite && (resident.role === 'CONDO_ADMIN' ? (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -497,17 +512,19 @@ export default function ResidentsPage() {
                         >
                           Tornar Admin
                         </Button>
+                      ))}
+                      {canWrite && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditServerError(null);
+                            setEditingId(resident.id);
+                          }}
+                        >
+                          Editar
+                        </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditServerError(null);
-                          setEditingId(resident.id);
-                        }}
-                      >
-                        Editar
-                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
