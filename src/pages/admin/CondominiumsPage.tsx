@@ -26,13 +26,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Form,
   FormControl,
   FormField,
@@ -58,12 +51,6 @@ interface Condominium {
   state: string;
   access_code: string;
   is_active: boolean;
-}
-
-interface Member {
-  id: string;
-  name: string;
-  email: string;
 }
 
 // ─── Create schema ─────────────────────────────────────────────────────────
@@ -293,22 +280,13 @@ export default function CondominiumsPage() {
 
   // Dialog state
   const [createOpen, setCreateOpen] = useState(false);
-  const [assigningId, setAssigningId] = useState<string | null>(null);
   const [createServerError, setCreateServerError] = useState<string | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // ─── Data fetching ──────────────────────────────────────────────────────
 
   const { data: condominiums = [], isLoading } = useQuery<Condominium[]>({
     queryKey: ['admin-condominiums'],
     queryFn: () => apiClient.get('/admin/condominiums').then((r) => r.data),
-  });
-
-  const { data: members = [], isLoading: membersLoading } = useQuery<Member[]>({
-    queryKey: ['condo-members', assigningId],
-    queryFn: () =>
-      apiClient.get(`/admin/condominiums/${assigningId}/members`).then((r) => r.data),
-    enabled: !!assigningId,
   });
 
   // ─── Defense in depth: only render for super-admin (T-BAC-01) ──────────
@@ -381,25 +359,6 @@ export default function CondominiumsPage() {
     }
   }
 
-  // ─── Assign admin handler ─────────────────────────────────────────────────
-
-  async function handleAssignAdmin() {
-    if (!selectedUserId) return;
-    try {
-      await apiClient.patch(`/admin/condominiums/${assigningId}/assign-admin`, {
-        userId: selectedUserId,
-      });
-      setAssigningId(null);
-      setSelectedUserId(null);
-      invalidate();
-      toast('Administrador designado com sucesso');
-    } catch (err) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      toast.error(status === 403
-        ? 'Você não tem permissão para executar essa ação.'
-        : 'Algo deu errado. Tente novamente em alguns instantes.');
-    }
-  }
 
   // ─── Derived state ────────────────────────────────────────────────────────
 
@@ -537,19 +496,6 @@ export default function CondominiumsPage() {
                       >
                         Editar
                       </Button>
-                      {canWrite && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedUserId(null);
-                            setAssigningId(condo.id);
-                          }}
-                        >
-                          Designar admin
-                        </Button>
-                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -573,56 +519,6 @@ export default function CondominiumsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Assign Admin Dialog */}
-      <Dialog
-        open={!!assigningId}
-        onOpenChange={(open) => {
-          if (!open) {
-            setAssigningId(null);
-            setSelectedUserId(null);
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Designar administrador</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {membersLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Carregando moradores...</span>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Morador</label>
-                <Select
-                  value={selectedUserId ?? undefined}
-                  onValueChange={(value) => setSelectedUserId(value as string)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione um morador" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {members.map((member) => (
-                      <SelectItem key={member.id} value={member.id}>
-                        {member.name} — {member.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <Button
-              className="w-full"
-              disabled={!selectedUserId}
-              onClick={handleAssignAdmin}
-            >
-              Confirmar designação
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
