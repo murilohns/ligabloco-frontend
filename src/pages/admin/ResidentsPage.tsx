@@ -390,21 +390,6 @@ export default function ResidentsPage() {
     }
   }
 
-  // ─── Promote/demote handler ───────────────────────────────────────────────
-
-  async function handlePromote(ucId: string, newRole: 'RESIDENT' | 'CONDO_ADMIN') {
-    try {
-      await apiClient.patch(`/admin/residents/${ucId}`, { role: newRole });
-      invalidate();
-      toast(newRole === 'CONDO_ADMIN' ? 'Morador promovido a administrador' : 'Papel de administrador revogado');
-    } catch (err) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      toast.error(status === 403
-        ? 'Você não tem permissão para executar essa ação.'
-        : 'Algo deu errado. Tente novamente em alguns instantes.');
-    }
-  }
-
   // ─── Remove handler ───────────────────────────────────────────────────────
 
   async function handleRemove() {
@@ -517,16 +502,6 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 justify-end">
-                      {(canWrite && canManageRoles) && resident.role === 'CONDO_ADMIN' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground"
-                          onClick={() => handlePromote(resident.id, 'RESIDENT')}
-                        >
-                          Revogar Admin
-                        </Button>
-                      )}
                       {canWrite && (
                         <Button
                           variant="outline"
