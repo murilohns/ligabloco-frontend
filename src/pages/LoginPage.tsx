@@ -62,7 +62,8 @@ export default function LoginPage() {
         },
         data.condominiumId,
       );
-      navigate('/dashboard', { replace: true });
+      const adminRole = data.user.adminRole;
+      navigate(adminRole !== null ? '/admin/condominiums' : '/dashboard', { replace: true });
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 401) {
