@@ -83,7 +83,7 @@ type CreateResidentValues = z.infer<typeof createResidentSchema>;
 const editResidentSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   phone: z.string().optional().refine((v) => !v || isValidPhoneNumber(v), 'Número de celular inválido'),
-  role: z.enum(['RESIDENT', 'CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ']),
+  role: z.enum(['RESIDENT', 'CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ']).optional(),
 });
 
 type EditResidentValues = z.infer<typeof editResidentSchema>;
@@ -313,9 +313,9 @@ export default function ResidentsPage() {
     user?.condoRole === 'CONDO_ADMIN' ||
     user?.condoRole === 'CONDO_WRITE';
 
-  // D-15: canManageRoles = only CONDO_ADMIN or platform admins can change roles
+  // D-15: canManageRoles = only CONDO_ADMIN or SUPER_ADMIN can change roles (READ_ONLY_ADMIN excluded)
   const canManageRoles =
-    (user?.adminRole !== null && user?.adminRole !== undefined) ||
+    user?.adminRole === 'SUPER_ADMIN' ||
     user?.condoRole === 'CONDO_ADMIN';
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -377,7 +377,8 @@ export default function ResidentsPage() {
   async function handleEdit(data: EditResidentValues) {
     setEditServerError(null);
     try {
-      await apiClient.patch(`/admin/residents/${editingId}`, data);
+      const payload = canManageRoles ? data : { name: data.name, phone: data.phone };
+      await apiClient.patch(`/admin/residents/${editingId}`, payload);
       setEditingId(null);
       invalidate();
       toast('Alterações salvas com sucesso');
@@ -516,7 +517,7 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 justify-end">
-                      {canManageRoles && (resident.role === 'CONDO_ADMIN' ? (
+                      {(canWrite && canManageRoles) && (resident.role === 'CONDO_ADMIN' ? (
                         <Button
                           variant="ghost"
                           size="sm"
