@@ -274,6 +274,8 @@ export default function CondominiumsPage() {
   const navigate = useNavigate();
   const updateToken = useAuthStore((s) => s.updateToken);
   const currentUser = useAuthStore((s) => s.user);
+  const activeCondominiumId = useAuthStore((s) => s.activeCondominiumId);
+  const isImpersonating = !!activeCondominiumId;
   const canWrite = currentUser?.adminRole === 'SUPER_ADMIN';
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -489,6 +491,8 @@ export default function CondominiumsPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={isImpersonating && condo.id !== activeCondominiumId}
+                        title={isImpersonating && condo.id !== activeCondominiumId ? 'Saia da visualização para editar outro condomínio' : undefined}
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/admin/condominiums/${condo.id}`);
