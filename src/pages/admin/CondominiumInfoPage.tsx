@@ -79,6 +79,7 @@ export default function CondominiumInfoPage() {
 
   // D-20: Zona de perigo and edit mode gated on TRUE super-admin, regardless of impersonation.
   const isSuperAdmin = user?.adminRole === 'SUPER_ADMIN';
+  const backPath = user?.adminRole !== null ? '/admin/condominiums' : '/dashboard';
 
   const {
     data: condo,
@@ -178,7 +179,7 @@ export default function CondominiumInfoPage() {
           variant="ghost"
           size="icon"
           aria-label="Voltar"
-          onClick={() => navigate('/admin/condominiums')}
+          onClick={() => navigate(backPath)}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -336,7 +337,7 @@ export default function CondominiumInfoPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => navigate('/admin/condominiums')}
+                    onClick={() => navigate(backPath)}
                   >
                     Cancelar
                   </Button>
