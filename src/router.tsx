@@ -125,7 +125,7 @@ export const router = createBrowserRouter([
       {
         path: '/admin/condominiums',
         element: (
-          <RequireRole role="superAdmin">
+          <RequireRole role="anyAdmin">
             <CondominiumsPage />
           </RequireRole>
         ),
