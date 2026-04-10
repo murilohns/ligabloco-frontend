@@ -525,14 +525,16 @@ export default function ResidentsPage() {
                           Editar
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => setRemovingId(resident.id)}
-                      >
-                        Remover
-                      </Button>
+                      {canWrite && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => setRemovingId(resident.id)}
+                        >
+                          Remover
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
