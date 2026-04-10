@@ -6,7 +6,7 @@ interface User {
   name: string;
   email: string;
   adminRole: 'SUPER_ADMIN' | 'READ_ONLY_ADMIN' | null;  // D-25: replaces isSuperAdmin
-  condoRole: 'RESIDENT' | 'CONDO_ADMIN' | null;
+  condoRole: 'RESIDENT' | 'CONDO_ADMIN' | 'CONDO_WRITE' | 'CONDO_READ' | null;
 }
 
 interface AuthState {

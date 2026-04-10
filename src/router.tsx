@@ -35,7 +35,7 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
             name: payload.name ?? '',
             email: payload.email,
             adminRole: (payload.adminRole as 'SUPER_ADMIN' | 'READ_ONLY_ADMIN' | null) ?? null,
-            condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN') || null,
+            condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN' | 'CONDO_WRITE' | 'CONDO_READ') || null,
           },
           payload.condominiumId ?? '',
           persistedName ?? undefined,
@@ -70,11 +70,18 @@ function RequireRole({
 }) {
   const user = useAuthStore((s) => s.user);
   if (role === 'superAdmin' && user?.adminRole !== 'SUPER_ADMIN') return <Navigate to="/dashboard" replace />;
-  if (role === 'condoAdmin' && user?.condoRole !== 'CONDO_ADMIN' && user?.adminRole === null) {
-    return <Navigate to="/dashboard" replace />;
+  if (role === 'condoAdmin') {
+    // D-18: CONDO_ADMIN, CONDO_WRITE, and CONDO_READ all have access to condo admin routes
+    const condoAdminRoles: string[] = ['CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ'];
+    if (!condoAdminRoles.includes(user?.condoRole ?? '') && user?.adminRole === null) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
-  if (role === 'anyAdmin' && user?.condoRole !== 'CONDO_ADMIN' && user?.adminRole === null) {
-    return <Navigate to="/dashboard" replace />;
+  if (role === 'anyAdmin') {
+    const condoAdminRoles: string[] = ['CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ'];
+    if (!condoAdminRoles.includes(user?.condoRole ?? '') && user?.adminRole === null) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
   return <>{children}</>;
 }

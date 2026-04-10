@@ -89,9 +89,10 @@ export default function AppShell() {
     if (condominiumId === activeCondominiumId) return;
     setSwitching(condominiumId);
     try {
-      const { data } = await apiClient.post('/auth/switch-tenant', { condominiumId });
+      const { data } = await apiClient.post<{ accessToken: string; condoRole: 'RESIDENT' | 'CONDO_ADMIN' | 'CONDO_WRITE' | 'CONDO_READ' }>('/auth/switch-tenant', { condominiumId });
       const name = condominiums.find((c) => c.id === condominiumId)?.name;
-      updateToken(data.accessToken, condominiumId, name);
+      updateToken(data.accessToken, condominiumId, name, { condoRole: data.condoRole });
+      queryClient.clear();
     } catch {
       // silent — user can try again
     } finally {
@@ -284,7 +285,7 @@ export default function AppShell() {
                 Plataforma
               </button>
             )}
-            {(user?.condoRole === 'CONDO_ADMIN' || user?.adminRole !== null) && (
+            {(user?.condoRole === 'CONDO_ADMIN' || user?.condoRole === 'CONDO_WRITE' || user?.condoRole === 'CONDO_READ' || user?.adminRole !== null) && (
               <button
                 onClick={() => navigateTo('/admin/residents')}
                 className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
