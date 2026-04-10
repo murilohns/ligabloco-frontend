@@ -50,6 +50,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { PhoneInput } from '@/components/PhoneInput';
+import { isValidPhoneNumber, formatPhoneNumberIntl } from 'react-phone-number-input';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -73,15 +75,15 @@ interface UserCondominium {
 const createResidentSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email('E-mail inválido'),
-  phone: z.string().optional(),
+  phone: z.string().optional().refine((v) => !v || isValidPhoneNumber(v), 'Número de celular inválido'),
 });
 
 type CreateResidentValues = z.infer<typeof createResidentSchema>;
 
 const editResidentSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  phone: z.string().optional(),
-  role: z.enum(['RESIDENT', 'CONDO_ADMIN']),
+  phone: z.string().optional().refine((v) => !v || isValidPhoneNumber(v), 'Número de celular inválido'),
+  role: z.enum(['RESIDENT', 'CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ']),
 });
 
 type EditResidentValues = z.infer<typeof editResidentSchema>;
@@ -115,6 +117,15 @@ function SkeletonRows() {
       ))}
     </>
   );
+}
+
+// ─── Role badge ─────────────────────────────────────────────────────────────
+
+function RoleBadge({ role }: { role: string }) {
+  if (role === 'CONDO_ADMIN') return <Badge className="bg-primary text-primary-foreground">Admin</Badge>;
+  if (role === 'CONDO_WRITE') return <Badge className="bg-blue-600 text-white">Admin (Escrita)</Badge>;
+  if (role === 'CONDO_READ') return <Badge className="bg-slate-500 text-white">Admin (Leitura)</Badge>;
+  return <Badge className="bg-muted text-muted-foreground">Morador</Badge>;
 }
 
 // ─── Create form ────────────────────────────────────────────────────────────
@@ -172,9 +183,9 @@ function CreateResidentForm({ onSubmit, serverError }: CreateFormProps) {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Telefone (opcional)</FormLabel>
+                <FormLabel>Celular (opcional)</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <PhoneInput value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} name={field.name} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -202,9 +213,10 @@ interface EditFormProps {
   defaultValues: EditResidentValues;
   onSubmit: (data: EditResidentValues) => Promise<void>;
   serverError: string | null;
+  canManageRoles: boolean;
 }
 
-function EditResidentForm({ defaultValues, onSubmit, serverError }: EditFormProps) {
+function EditResidentForm({ defaultValues, onSubmit, serverError, canManageRoles }: EditFormProps) {
   const form = useForm<EditResidentValues>({
     resolver: zodResolver(editResidentSchema),
     defaultValues,
@@ -239,35 +251,39 @@ function EditResidentForm({ defaultValues, onSubmit, serverError }: EditFormProp
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Telefone (opcional)</FormLabel>
+                <FormLabel>Celular (opcional)</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <PhoneInput value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} name={field.name} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Papel</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o papel" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="RESIDENT">Morador</SelectItem>
-                    <SelectItem value="CONDO_ADMIN">Administrador</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {canManageRoles && (
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Papel</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione o papel" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="RESIDENT">Morador</SelectItem>
+                      <SelectItem value="CONDO_WRITE">Admin (Escrita)</SelectItem>
+                      <SelectItem value="CONDO_READ">Admin (Leitura)</SelectItem>
+                      <SelectItem value="CONDO_ADMIN">Administrador Completo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
@@ -291,7 +307,16 @@ const PAGE_SIZE = 10;
 export default function ResidentsPage() {
   const queryClient = useQueryClient();
   const { activeCondominiumName, activeCondominiumId, accessToken, user } = useAuthStore();
-  const canWrite = user?.adminRole !== 'READ_ONLY_ADMIN';
+  // D-14: canWrite = platform admin (any non-null adminRole except READ_ONLY_ADMIN) OR condo write-capable role
+  const canWrite =
+    (user?.adminRole !== null && user?.adminRole !== 'READ_ONLY_ADMIN') ||
+    user?.condoRole === 'CONDO_ADMIN' ||
+    user?.condoRole === 'CONDO_WRITE';
+
+  // D-15: canManageRoles = only CONDO_ADMIN or platform admins can change roles
+  const canManageRoles =
+    (user?.adminRole !== null && user?.adminRole !== undefined) ||
+    user?.condoRole === 'CONDO_ADMIN';
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -441,7 +466,7 @@ export default function ResidentsPage() {
             <TableRow>
               <TableHead className="text-muted-foreground">Nome</TableHead>
               <TableHead className="text-muted-foreground">E-mail</TableHead>
-              <TableHead className="text-muted-foreground">Telefone</TableHead>
+              <TableHead className="text-muted-foreground">Celular</TableHead>
               <TableHead className="text-muted-foreground">Papel</TableHead>
               <TableHead className="text-muted-foreground">Status</TableHead>
               <TableHead className="text-muted-foreground text-right">Ações</TableHead>
@@ -477,14 +502,10 @@ export default function ResidentsPage() {
                     {resident.user.email}
                   </TableCell>
                   <TableCell className="text-[14px] text-muted-foreground">
-                    {resident.user.phone ?? '—'}
+                    {resident.user.phone ? (formatPhoneNumberIntl(resident.user.phone) || resident.user.phone) : '—'}
                   </TableCell>
                   <TableCell>
-                    {resident.role === 'CONDO_ADMIN' ? (
-                      <Badge className="bg-primary text-primary-foreground">Admin</Badge>
-                    ) : (
-                      <Badge className="bg-muted text-muted-foreground">Morador</Badge>
-                    )}
+                    <RoleBadge role={resident.role} />
                   </TableCell>
                   <TableCell>
                     {resident.is_active ? (
@@ -495,7 +516,7 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 justify-end">
-                      {canWrite && (resident.role === 'CONDO_ADMIN' ? (
+                      {canManageRoles && (resident.role === 'CONDO_ADMIN' ? (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -602,10 +623,11 @@ export default function ResidentsPage() {
               defaultValues={{
                 name: editingResident.user.name,
                 phone: editingResident.user.phone ?? '',
-                role: editingResident.role as 'RESIDENT' | 'CONDO_ADMIN',
+                role: editingResident.role as 'RESIDENT' | 'CONDO_ADMIN' | 'CONDO_WRITE' | 'CONDO_READ',
               }}
               onSubmit={handleEdit}
               serverError={editServerError}
+              canManageRoles={canManageRoles}
             />
           )}
         </DialogContent>
