@@ -517,7 +517,7 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 justify-end">
-                      {(canWrite && canManageRoles) && (resident.role === 'CONDO_ADMIN' ? (
+                      {(canWrite && canManageRoles) && resident.role === 'CONDO_ADMIN' && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -526,15 +526,7 @@ export default function ResidentsPage() {
                         >
                           Revogar Admin
                         </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePromote(resident.id, 'CONDO_ADMIN')}
-                        >
-                          Tornar Admin
-                        </Button>
-                      ))}
+                      )}
                       {canWrite && (
                         <Button
                           variant="outline"
