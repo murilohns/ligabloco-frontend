@@ -87,6 +87,12 @@ export default function ProfilePage() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {profile?.email && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">E-mail</label>
+                  <Input value={profile.email} disabled className="bg-muted" />
+                </div>
+              )}
               <FormField
                 control={form.control}
                 name="name"
@@ -100,19 +106,21 @@ export default function ProfilePage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefone (opcional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="(XX) XXXXX-XXXX" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!profile?.isAdmin && (
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone (opcional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="(XX) XXXXX-XXXX" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <Button
                 type="submit"
                 className="w-full mt-2"
