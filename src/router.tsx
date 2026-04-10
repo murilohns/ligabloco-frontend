@@ -70,16 +70,10 @@ function RequireRole({
 }) {
   const user = useAuthStore((s) => s.user);
   if (role === 'superAdmin' && user?.adminRole !== 'SUPER_ADMIN') return <Navigate to="/dashboard" replace />;
-  if (role === 'condoAdmin') {
+  if (role === 'condoAdmin' || role === 'anyAdmin') {
     // D-18: CONDO_ADMIN, CONDO_WRITE, and CONDO_READ all have access to condo admin routes
     const condoAdminRoles: string[] = ['CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ'];
-    if (!condoAdminRoles.includes(user?.condoRole ?? '') && user?.adminRole === null) {
-      return <Navigate to="/dashboard" replace />;
-    }
-  }
-  if (role === 'anyAdmin') {
-    const condoAdminRoles: string[] = ['CONDO_ADMIN', 'CONDO_WRITE', 'CONDO_READ'];
-    if (!condoAdminRoles.includes(user?.condoRole ?? '') && user?.adminRole === null) {
+    if (!condoAdminRoles.includes(user?.condoRole ?? '') && !user?.adminRole) {
       return <Navigate to="/dashboard" replace />;
     }
   }
