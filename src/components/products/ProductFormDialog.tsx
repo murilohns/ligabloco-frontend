@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ProductForm, type ProductFormValues } from './ProductForm';
+import { ProductForm, type ProductFormHandle, type ProductFormValues } from './ProductForm';
 import type { Product } from '@/lib/products.api';
 
 interface Props {
@@ -45,12 +45,18 @@ function useMediaQuery(query: string): boolean {
 
 export function ProductFormDialog({ open, onOpenChange, initial, mode, onSubmit }: Props) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  const formRef = useRef<ProductFormHandle>(null);
 
   const title = mode === 'create' ? 'Novo anúncio' : 'Editar anúncio';
   const submitLabel = mode === 'create' ? 'Publicar anúncio' : 'Salvar alterações';
 
-  function handleCancel() {
-    onOpenChange(false);
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      // Route external close through dirty check instead of closing directly
+      formRef.current?.handleCancel();
+    } else {
+      onOpenChange(true);
+    }
   }
 
   async function handleSubmit(values: ProductFormValues) {
@@ -60,15 +66,16 @@ export function ProductFormDialog({ open, onOpenChange, initial, mode, onSubmit 
 
   if (isDesktop) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
           <ProductForm
+            ref={formRef}
             initial={initial}
             onSubmit={handleSubmit}
-            onCancel={handleCancel}
+            onCancel={() => onOpenChange(false)}
             submitLabel={submitLabel}
           />
         </DialogContent>
@@ -77,16 +84,17 @@ export function ProductFormDialog({ open, onOpenChange, initial, mode, onSubmit 
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
         <div className="mt-4">
           <ProductForm
+            ref={formRef}
             initial={initial}
             onSubmit={handleSubmit}
-            onCancel={handleCancel}
+            onCancel={() => onOpenChange(false)}
             submitLabel={submitLabel}
           />
         </div>
