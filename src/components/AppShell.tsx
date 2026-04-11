@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck, ShoppingBag, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
@@ -267,6 +267,24 @@ export default function AppShell() {
               <User className="h-5 w-5 text-muted-foreground shrink-0" />
               Meu Perfil
             </button>
+            {activeCondominiumId && (
+              <>
+                <button
+                  onClick={() => navigateTo('/produtos')}
+                  className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
+                >
+                  <ShoppingBag className="h-5 w-5 text-muted-foreground shrink-0" />
+                  Produtos
+                </button>
+                <button
+                  onClick={() => navigateTo('/produtos/meus')}
+                  className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
+                >
+                  <Package className="h-5 w-5 text-muted-foreground shrink-0" />
+                  Meus anúncios
+                </button>
+              </>
+            )}
 {user?.adminRole !== null && (
               <button
                 onClick={() => navigateTo('/admin/condominiums')}
