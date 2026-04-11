@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Sheet,
   SheetContent,
@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
 import { apiClient } from '../lib/axios';
+import { uploadUrl } from '@/lib/uploads';
 
 interface Condominium {
   id: string;
@@ -72,6 +73,11 @@ export default function AppShell() {
       setIsExiting(false);
     }
   };
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => apiClient.get('/users/me').then((r) => r.data),
+  });
 
   const { data: condominiums = [] } = useQuery<Condominium[]>({
     queryKey: ['condominiums'],
@@ -220,6 +226,9 @@ export default function AppShell() {
             aria-label="Abrir menu"
           >
             <Avatar className="h-8 w-8 cursor-pointer">
+              {profile?.avatar_url && (
+                <AvatarImage src={uploadUrl(profile.avatar_url)} alt="Avatar" />
+              )}
               <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
                 {initials}
               </AvatarFallback>
@@ -239,6 +248,9 @@ export default function AppShell() {
           >
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
+                {profile?.avatar_url && (
+                  <AvatarImage src={uploadUrl(profile.avatar_url)} alt="Avatar" />
+                )}
                 <AvatarFallback className="bg-white/20 text-white text-base font-bold">
                   {initials}
                 </AvatarFallback>
@@ -323,6 +335,9 @@ export default function AppShell() {
           >
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 shrink-0">
+                {profile?.avatar_url && (
+                  <AvatarImage src={uploadUrl(profile.avatar_url)} alt="Avatar" />
+                )}
                 <AvatarFallback className="bg-white/20 text-white text-sm font-bold">
                   {initials}
                 </AvatarFallback>
