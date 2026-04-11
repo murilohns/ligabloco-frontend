@@ -16,6 +16,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { PhoneInput } from '@/components/PhoneInput';
+import { isValidPhoneNumber } from 'react-phone-number-input';
 import {
   Form,
   FormControl,
@@ -31,11 +33,9 @@ const API_URL = import.meta.env.VITE_API_URL ?? '';
 const schema = z.object({
   name: z.string().min(2, 'Informe seu nome'),
   phone: z
-    .union([
-      z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Formato inválido. Use (XX) XXXXX-XXXX'),
-      z.literal(''),
-    ])
-    .optional(),
+    .string()
+    .optional()
+    .refine((v) => !v || isValidPhoneNumber(v), 'Número de celular inválido'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -216,9 +216,9 @@ export default function ProfilePage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone (opcional)</FormLabel>
+                      <FormLabel>Celular (opcional)</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="(XX) XXXXX-XXXX" />
+                        <PhoneInput value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} name={field.name} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

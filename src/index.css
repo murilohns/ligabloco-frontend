@@ -132,6 +132,47 @@
     }
 }
 
+/* react-phone-number-input — match shadcn Input style */
+.phone-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input);
+  background: transparent;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  height: 2.25rem;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.phone-input:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 30%, transparent);
+  border-color: var(--ring);
+}
+.phone-input .PhoneInputCountrySelect {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+}
+.phone-input .PhoneInputInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  min-width: 0;
+}
+.phone-input .PhoneInputInput::placeholder {
+  color: var(--muted-foreground);
+}
+
 @layer utilities {
   .glass {
     background: rgba(255, 255, 255, 0.7);
