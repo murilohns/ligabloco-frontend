@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ImageOff, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { uploadUrl } from '@/lib/uploads';
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -170,7 +170,7 @@ export function ImageUploader({ existingUrls = [], onChange, maxTotal = 5, disab
             return (
               <div key={url} className="relative w-20 h-20 shrink-0">
                 <img
-                  src={`${API_URL}${url}`}
+                  src={uploadUrl(url)}
                   alt={`Imagem ${globalIndex + 1}`}
                   className="w-full h-full object-cover rounded-md border"
                 />
