@@ -30,6 +30,7 @@ export function ImageUploader({ existingUrls = [], onChange, maxTotal = 5, disab
     setNewFiles([]);
     setPreviews(new Map());
     setError(null);
+    onChange({ newFiles: [], keepUrls: existingUrls });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingUrls.join(',')]);
 
