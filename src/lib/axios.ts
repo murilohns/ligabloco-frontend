@@ -51,8 +51,8 @@ apiClient.interceptors.response.use(
         state.activeCondominiumName ?? undefined,
         {
           email: payload.email,
-          isSuperAdmin: payload.isSuperAdmin ?? false,
-          condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN') || null,
+          adminRole: (payload.adminRole as 'SUPER_ADMIN' | 'READ_ONLY_ADMIN' | null) ?? null,
+          condoRole: (payload.role as 'RESIDENT' | 'CONDO_ADMIN' | 'CONDO_WRITE' | 'CONDO_READ') || null,
         },
       );
       refreshQueue.forEach((cb) => cb(newToken));

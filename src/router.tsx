@@ -14,6 +14,8 @@ import CondominiumsPage from './pages/admin/CondominiumsPage';
 import CondominiumInfoPage from './pages/admin/CondominiumInfoPage';
 import ResidentsPage from './pages/admin/ResidentsPage';
 import PlatformPage from './pages/admin/PlatformPage';
+import ProdutosPage from './pages/ProdutosPage';
+import ProdutoDetailPage from './pages/ProdutoDetailPage';
 
 function Bootstrap({ children }: { children: React.ReactNode }) {
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -122,7 +124,9 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: '/dashboard', element: <DashboardPage /> },
-{ path: '/profile', element: <ProfilePage /> },
+      { path: '/profile', element: <ProfilePage /> },
+      { path: '/produtos', element: <ProdutosPage /> },
+      { path: '/produtos/:id', element: <ProdutoDetailPage /> },
       {
         path: '/admin/condominiums',
         element: (
