@@ -409,8 +409,8 @@ export default function AppShell() {
         </aside>
 
         {/* Page content */}
-        <main className="flex-1 px-4 py-8">
-          <div className="max-w-2xl mx-auto">
+        <main className="flex-1 min-w-0 px-4 py-8">
+          <div className="max-w-2xl mx-auto min-w-0">
             <Outlet />
           </div>
         </main>

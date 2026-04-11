@@ -62,7 +62,7 @@ export default function ProdutosPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="aspect-[4/3] w-full rounded-lg" />
@@ -95,7 +95,7 @@ export default function ProdutosPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((p) => (
             <ProductCard key={p.id} product={p} to={`/produtos/${p.id}`} />
           ))}
