@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -70,6 +70,10 @@ export interface ProductFormValues {
   keepUrls: string[];
 }
 
+export interface ProductFormHandle {
+  handleCancel: () => void;
+}
+
 interface Props {
   initial?: Product;
   onSubmit: (values: ProductFormValues) => Promise<void>;
@@ -88,7 +92,8 @@ function parsePrice(raw: string): number | null {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function ProductForm({ initial, onSubmit, onCancel, submitLabel }: Props) {
+export const ProductForm = forwardRef<ProductFormHandle, Props>(
+  function ProductForm({ initial, onSubmit, onCancel, submitLabel }, ref) {
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [keepUrls, setKeepUrls] = useState<string[]>(initial?.image_urls ?? []);
   const [imagesDirty, setImagesDirty] = useState(false);
@@ -143,6 +148,10 @@ export function ProductForm({ initial, onSubmit, onCancel, submitLabel }: Props)
       onCancel();
     }
   }
+
+  useImperativeHandle(ref, () => ({
+    handleCancel,
+  }));
 
   const parsedPrice = parsePrice(priceRaw);
 
@@ -332,4 +341,5 @@ export function ProductForm({ initial, onSubmit, onCancel, submitLabel }: Props)
       </AlertDialog>
     </>
   );
-}
+});
+
