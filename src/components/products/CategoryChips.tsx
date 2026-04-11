@@ -8,7 +8,7 @@ interface Props {
 
 export function CategoryChips({ selected, onChange }: Props) {
   return (
-    <div className="-mx-4 px-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+    <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden">
       <div className="flex gap-2 pb-2 snap-x snap-mandatory">
         <button
           type="button"

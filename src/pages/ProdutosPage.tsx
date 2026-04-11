@@ -57,7 +57,7 @@ export default function ProdutosPage() {
         />
       </div>
 
-      <div className="sticky top-16 bg-background/95 backdrop-blur py-2 z-10">
+      <div className="sticky top-14 bg-background/95 backdrop-blur py-2 z-10">
         <CategoryChips selected={category} onChange={setCategory} />
       </div>
 
