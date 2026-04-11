@@ -212,8 +212,8 @@ export default function AppShell() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Avatar — right side, opens Sheet on all screen sizes */}
-        <div className="flex items-center">
+        {/* Avatar — right side, opens Sheet on mobile only */}
+        <div className="flex items-center lg:hidden">
           <button
             className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50"
             onClick={() => setSheetOpen(true)}
@@ -228,10 +228,9 @@ export default function AppShell() {
         </div>
       </header>
 
-      {/* Sheet drawer — all screen sizes */}
+      {/* Sheet drawer — mobile only */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
-          {/* Sheet header with user info */}
           <SheetHeader
             className="p-6 pb-4"
             style={{
@@ -257,76 +256,50 @@ export default function AppShell() {
               </p>
             )}
           </SheetHeader>
-
-          {/* Nav items */}
           <nav className="flex flex-col py-3">
-            <button
-              onClick={() => navigateTo('/profile')}
-              className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-            >
+            <button onClick={() => navigateTo('/profile')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
               <User className="h-5 w-5 text-muted-foreground shrink-0" />
               Meu Perfil
             </button>
             {activeCondominiumId && (
               <>
-                <button
-                  onClick={() => navigateTo('/produtos')}
-                  className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-                >
+                <button onClick={() => navigateTo('/produtos')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                   <ShoppingBag className="h-5 w-5 text-muted-foreground shrink-0" />
                   Produtos
                 </button>
-                <button
-                  onClick={() => navigateTo('/produtos/meus')}
-                  className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-                >
+                <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                   <Package className="h-5 w-5 text-muted-foreground shrink-0" />
                   Meus anúncios
                 </button>
               </>
             )}
-{user?.adminRole !== null && (
-              <button
-                onClick={() => navigateTo('/admin/condominiums')}
-                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-              >
+            {user?.adminRole !== null && (
+              <button onClick={() => navigateTo('/admin/condominiums')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                 <LayoutGrid className="h-5 w-5 text-muted-foreground shrink-0" />
                 Condomínios
               </button>
             )}
             {user?.adminRole === 'SUPER_ADMIN' && (
-              <button
-                onClick={() => navigateTo('/admin/platform')}
-                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-              >
+              <button onClick={() => navigateTo('/admin/platform')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                 <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0" />
                 Plataforma
               </button>
             )}
             {(user?.condoRole === 'CONDO_ADMIN' || user?.condoRole === 'CONDO_WRITE' || user?.condoRole === 'CONDO_READ' || user?.adminRole !== null) && (
-              <button
-                onClick={() => navigateTo('/admin/residents')}
-                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-              >
+              <button onClick={() => navigateTo('/admin/residents')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                 <Users className="h-5 w-5 text-muted-foreground shrink-0" />
                 Moradores
               </button>
             )}
             {user?.condoRole === 'CONDO_ADMIN' && user?.adminRole === null && activeCondominiumId && (
-              <button
-                onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)}
-                className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80"
-              >
+              <button onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                 <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
-                Informacoes do condominio
+                Informações do condomínio
               </button>
             )}
             <Separator className="my-2" />
             <button
-              onClick={() => {
-                setSheetOpen(false);
-                setLogoutOpen(true);
-              }}
+              onClick={() => { setSheetOpen(false); setLogoutOpen(true); }}
               className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium text-destructive hover:bg-destructive/10 transition-colors active:bg-destructive/15"
             >
               <LogOut className="h-5 w-5 shrink-0" />
@@ -336,10 +309,97 @@ export default function AppShell() {
         </SheetContent>
       </Sheet>
 
-      {/* Page content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        <Outlet />
-      </main>
+      {/* Body: persistent sidebar (lg+) + main content */}
+      <div className="flex" style={{ minHeight: 'calc(100vh - 3.5rem)' }}>
+        {/* Persistent sidebar — large screens only */}
+        <aside
+          className="hidden lg:flex flex-col w-64 border-r border-border bg-background shrink-0 sticky overflow-y-auto"
+          style={{ top: '3.5rem', height: 'calc(100vh - 3.5rem)' }}
+        >
+          {/* User info */}
+          <div
+            className="p-6 pb-4 shrink-0"
+            style={{ background: 'linear-gradient(160deg, oklch(0.50 0.26 280) 0%, oklch(0.42 0.22 290) 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarFallback className="bg-white/20 text-white text-sm font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="text-white text-sm font-semibold truncate">{user?.name ?? 'Usuário'}</p>
+                <p className="text-white/70 text-xs truncate mt-0.5">{user?.email ?? ''}</p>
+              </div>
+            </div>
+            {activeCondoName && (
+              <p className="text-white/60 text-xs mt-3 truncate">{activeCondoName}</p>
+            )}
+          </div>
+
+          {/* Nav */}
+          <nav className="flex flex-col py-3 flex-1">
+            <button onClick={() => navigateTo('/profile')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+              <User className="h-4 w-4 text-muted-foreground shrink-0" />
+              Meu Perfil
+            </button>
+            {activeCondominiumId && (
+              <>
+                <button onClick={() => navigateTo('/produtos')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                  <ShoppingBag className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Produtos
+                </button>
+                <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Meus anúncios
+                </button>
+              </>
+            )}
+            {user?.adminRole !== null && (
+              <button onClick={() => navigateTo('/admin/condominiums')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                <LayoutGrid className="h-4 w-4 text-muted-foreground shrink-0" />
+                Condomínios
+              </button>
+            )}
+            {user?.adminRole === 'SUPER_ADMIN' && (
+              <button onClick={() => navigateTo('/admin/platform')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+                Plataforma
+              </button>
+            )}
+            {(user?.condoRole === 'CONDO_ADMIN' || user?.condoRole === 'CONDO_WRITE' || user?.condoRole === 'CONDO_READ' || user?.adminRole !== null) && (
+              <button onClick={() => navigateTo('/admin/residents')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                Moradores
+              </button>
+            )}
+            {user?.condoRole === 'CONDO_ADMIN' && user?.adminRole === null && activeCondominiumId && (
+              <button onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                Informações do condomínio
+              </button>
+            )}
+          </nav>
+
+          {/* Logout at bottom */}
+          <div className="border-t border-border shrink-0">
+            <button
+              onClick={() => setLogoutOpen(true)}
+              className="flex items-center gap-3 px-5 py-3 w-full text-left text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors active:bg-destructive/15"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              Sair
+            </button>
+          </div>
+        </aside>
+
+        {/* Page content */}
+        <main className="flex-1 px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
+      </div>
 
       {/* Logout confirmation */}
       <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
