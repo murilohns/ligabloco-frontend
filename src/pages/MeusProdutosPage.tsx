@@ -180,7 +180,7 @@ export default function MeusProdutosPage() {
             <p className="text-sm text-muted-foreground mt-1">Gerencie os produtos que você publicou neste condomínio</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-lg border bg-card overflow-hidden">
               <Skeleton className="aspect-[4/3] w-full" />
@@ -280,7 +280,7 @@ export default function MeusProdutosPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 {active.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -297,7 +297,7 @@ export default function MeusProdutosPage() {
             {inactive.length === 0 ? (
               <p className="text-muted-foreground text-sm py-8 text-center">Nenhum anúncio inativo.</p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 {inactive.map((product) => (
                   <div key={product.id} className="relative opacity-60 saturate-75">
                     <Badge

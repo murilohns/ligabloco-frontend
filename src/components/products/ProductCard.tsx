@@ -46,8 +46,8 @@ export function ProductCard({ product, to, actions }: Props) {
           {CATEGORY_LABELS[product.category]}
         </Badge>
       </div>
-      <div className="p-4 space-y-2">
-        <h3 className="font-heading text-xl font-semibold leading-tight line-clamp-2">{product.name}</h3>
+      <div className="p-3 sm:p-4 space-y-2">
+        <h3 className="font-heading text-sm sm:text-base md:text-lg font-semibold leading-tight line-clamp-2">{product.name}</h3>
         <PriceDisplay value={product.price} variant="card" />
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Avatar className="h-5 w-5">
