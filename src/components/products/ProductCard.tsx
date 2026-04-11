@@ -7,7 +7,7 @@ import { CATEGORY_LABELS } from '@/lib/categories';
 import { type Product } from '@/lib/products.api';
 import { cn } from '@/lib/utils';
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import { uploadUrl } from '@/lib/uploads';
 
 interface Props {
   product: Product;
@@ -18,7 +18,7 @@ interface Props {
 
 export function ProductCard({ product, to, actions }: Props) {
   const firstImage = product.image_urls[0];
-  const thumbSrc = firstImage ? `${API_URL}${firstImage.replace(/\.webp$/, '.thumb.webp')}` : null;
+  const thumbSrc = firstImage ? uploadUrl(firstImage.replace(/\.webp$/, '.thumb.webp')) : null;
   const initials = product.seller.name
     .split(' ')
     .slice(0, 2)

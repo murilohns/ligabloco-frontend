@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form';
 import { apiClient } from '../lib/axios';
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import { uploadUrl } from '@/lib/uploads';
 
 const schema = z.object({
   name: z.string().min(2, 'Informe seu nome'),
@@ -146,7 +146,7 @@ export default function ProfilePage() {
                 <Avatar className="h-20 w-20">
                   {(avatarPreview || profile?.avatar_url) ? (
                     <AvatarImage
-                      src={avatarPreview ?? `${API_URL}${profile.avatar_url}`}
+                      src={avatarPreview ?? uploadUrl(profile.avatar_url)}
                       alt={profile?.name ?? 'Avatar'}
                     />
                   ) : null}

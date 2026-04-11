@@ -74,7 +74,7 @@ export async function updateProduct(id: string, input: UpdateProductInput): Prom
   if (input.description !== undefined) fd.append('description', input.description);
   if (input.price !== undefined) fd.append('price', String(input.price));
   if (input.category !== undefined) fd.append('category', input.category);
-  for (const url of input.keepImages) fd.append('keepImages[]', url);
+  for (const url of input.keepImages) fd.append('keepImages', url);
   for (const file of input.newImages) fd.append('newImages', file);
   const { data } = await apiClient.patch<unknown>(`/products/${id}`, fd);
   return parseProduct(data);

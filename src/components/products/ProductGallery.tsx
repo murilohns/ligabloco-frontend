@@ -1,7 +1,7 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ImageOff } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import { uploadUrl } from '@/lib/uploads';
 
 interface Props {
   imageUrls: string[];
@@ -24,7 +24,7 @@ export function ProductGallery({ imageUrls, productName }: Props) {
           <CarouselItem key={url}>
             <div className="aspect-[4/3] w-full bg-muted rounded-lg overflow-hidden">
               <img
-                src={`${API_URL}${url}`}
+                src={uploadUrl(url)}
                 alt={i === 0 ? productName : `${productName} — foto ${i + 1}`}
                 className="w-full h-full object-contain"
               />
