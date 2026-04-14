@@ -302,10 +302,6 @@ export default function CondominiumsPage() {
         response?: { status?: number; data?: { message?: string | string[] } };
       };
       const status = axiosErr?.response?.status;
-      const rawMessage = axiosErr?.response?.data?.message;
-      const message = Array.isArray(rawMessage)
-        ? rawMessage.join(' ').toLowerCase()
-        : (rawMessage ?? '').toString().toLowerCase();
       if (status === 409) {
         const msg = 'Já existe um condomínio com este CNPJ.';
         setCreateServerError(msg);
