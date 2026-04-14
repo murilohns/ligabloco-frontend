@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck, ShoppingBag, Package } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck, ShoppingBag, Package, Wrench, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
@@ -282,7 +282,17 @@ export default function AppShell() {
                 {!user?.adminRole && (
                   <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
                     <Package className="h-5 w-5 text-muted-foreground shrink-0" />
-                    Meus anúncios
+                    Minha vitrine
+                  </button>
+                )}
+                <button onClick={() => navigateTo('/services')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                  <Wrench className="h-5 w-5 text-muted-foreground shrink-0" />
+                  Serviços
+                </button>
+                {!user?.adminRole && (
+                  <button onClick={() => navigateTo('/services/mine')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                    <Briefcase className="h-5 w-5 text-muted-foreground shrink-0" />
+                    Meus serviços
                   </button>
                 )}
               </>
@@ -369,7 +379,17 @@ export default function AppShell() {
                 {!user?.adminRole && (
                   <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
                     <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                    Meus anúncios
+                    Minha vitrine
+                  </button>
+                )}
+                <button onClick={() => navigateTo('/services')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                  <Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
+                  Serviços
+                </button>
+                {!user?.adminRole && (
+                  <button onClick={() => navigateTo('/services/mine')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                    <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
+                    Meus serviços
                   </button>
                 )}
               </>

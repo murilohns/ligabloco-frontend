@@ -17,6 +17,9 @@ import PlatformPage from './pages/admin/PlatformPage';
 import ProdutosPage from './pages/ProdutosPage';
 import ProdutoDetailPage from './pages/ProdutoDetailPage';
 import MeusProdutosPage from './pages/MeusProdutosPage';
+import ServicesPage from './pages/ServicesPage';
+import ServiceDetailPage from './pages/ServiceDetailPage';
+import MyServicesPage from './pages/MyServicesPage';
 
 function Bootstrap({ children }: { children: React.ReactNode }) {
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -129,6 +132,9 @@ export const router = createBrowserRouter([
       { path: '/produtos', element: <ProdutosPage /> },
       { path: '/produtos/:id', element: <ProdutoDetailPage /> },
       { path: '/produtos/meus', element: <MeusProdutosPage /> },
+      { path: '/services', element: <ServicesPage /> },
+      { path: '/services/mine', element: <MyServicesPage /> },
+      { path: '/services/:id', element: <ServiceDetailPage /> },
       {
         path: '/admin/condominiums',
         element: (
