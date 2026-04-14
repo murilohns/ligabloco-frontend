@@ -279,10 +279,12 @@ export default function AppShell() {
                   <ShoppingBag className="h-5 w-5 text-muted-foreground shrink-0" />
                   Produtos
                 </button>
-                <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                  <Package className="h-5 w-5 text-muted-foreground shrink-0" />
-                  Meus anúncios
-                </button>
+                {!user?.adminRole && (
+                  <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-4 px-6 py-4 text-left text-base font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                    <Package className="h-5 w-5 text-muted-foreground shrink-0" />
+                    Meus anúncios
+                  </button>
+                )}
               </>
             )}
             {user?.adminRole !== null && (
@@ -364,10 +366,12 @@ export default function AppShell() {
                   <ShoppingBag className="h-4 w-4 text-muted-foreground shrink-0" />
                   Produtos
                 </button>
-                <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                  Meus anúncios
-                </button>
+                {!user?.adminRole && (
+                  <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
+                    <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                    Meus anúncios
+                  </button>
+                )}
               </>
             )}
             {user?.adminRole !== null && (
