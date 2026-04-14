@@ -81,9 +81,13 @@ export default function ServicesPage() {
         <div className="text-center py-12 space-y-4">
           <h2 className="font-heading text-xl font-semibold">Nenhum serviço por aqui ainda</h2>
           <p className="text-sm text-muted-foreground">
-            Os moradores deste condomínio ainda não publicaram serviços. Seja o primeiro.
+            {currentUser?.adminRole
+              ? 'Os moradores deste condomínio ainda não publicaram serviços.'
+              : 'Os moradores deste condomínio ainda não publicaram serviços. Seja o primeiro.'}
           </p>
-          <Button onClick={() => navigate('/services/mine?new=1')}>+ Novo serviço</Button>
+          {!currentUser?.adminRole && (
+            <Button onClick={() => navigate('/services/mine?new=1')}>+ Novo serviço</Button>
+          )}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 space-y-4">

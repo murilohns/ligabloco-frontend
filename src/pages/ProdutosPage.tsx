@@ -81,9 +81,13 @@ export default function ProdutosPage() {
         <div className="text-center py-12 space-y-4">
           <h2 className="font-heading text-xl font-semibold">Nenhum produto por aqui ainda</h2>
           <p className="text-sm text-muted-foreground">
-            Os moradores deste condomínio ainda não publicaram anúncios. Seja o primeiro.
+            {currentUser?.adminRole
+              ? 'Os moradores deste condomínio ainda não publicaram anúncios.'
+              : 'Os moradores deste condomínio ainda não publicaram anúncios. Seja o primeiro.'}
           </p>
-          <Button onClick={() => navigate('/produtos/meus?new=1')}>+ Novo anúncio</Button>
+          {!currentUser?.adminRole && (
+            <Button onClick={() => navigate('/produtos/meus?new=1')}>+ Novo anúncio</Button>
+          )}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 space-y-4">

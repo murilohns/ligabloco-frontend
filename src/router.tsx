@@ -110,6 +110,14 @@ function RequireImpersonationContext({ children }: { children: React.ReactNode }
   return <>{children}</>;
 }
 
+// System admins (SUPER_ADMIN / READ_ONLY_ADMIN) cannot create products or services.
+// Redirect them to the browse page instead.
+function RequireNonAdmin({ children, redirectTo }: { children: React.ReactNode; redirectTo: string }) {
+  const user = useAuthStore((s) => s.user);
+  if (user?.adminRole) return <Navigate to={redirectTo} replace />;
+  return <>{children}</>;
+}
+
 export const router = createBrowserRouter([
   // Public routes
   { path: '/login', element: <LoginPage /> },
@@ -131,9 +139,9 @@ export const router = createBrowserRouter([
       { path: '/profile', element: <ProfilePage /> },
       { path: '/produtos', element: <ProdutosPage /> },
       { path: '/produtos/:id', element: <ProdutoDetailPage /> },
-      { path: '/produtos/meus', element: <MeusProdutosPage /> },
+      { path: '/produtos/meus', element: <RequireNonAdmin redirectTo="/produtos"><MeusProdutosPage /></RequireNonAdmin> },
       { path: '/services', element: <ServicesPage /> },
-      { path: '/services/mine', element: <MyServicesPage /> },
+      { path: '/services/mine', element: <RequireNonAdmin redirectTo="/services"><MyServicesPage /></RequireNonAdmin> },
       { path: '/services/:id', element: <ServiceDetailPage /> },
       {
         path: '/admin/condominiums',
