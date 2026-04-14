@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,17 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { CategoryChips } from '@/components/products/CategoryChips';
 import { listProducts } from '@/lib/products.api';
 import type { Category } from '@/lib/categories';
+import { useAuthStore } from '@/store/auth.store';
+import { HardDeleteProductDialog } from '@/components/products/HardDeleteProductDialog';
 
 export default function ProdutosPage() {
   const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<Category | null>(null);
+  const currentUser = useAuthStore((s) => s.user);
+  const isSuperAdmin = currentUser?.adminRole === 'SUPER_ADMIN';
+  const [hardDeleting, setHardDeleting] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 150);
@@ -97,10 +103,29 @@ export default function ProdutosPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} to={`/produtos/${p.id}`} />
+            <ProductCard
+              key={p.id}
+              product={p}
+              to={`/produtos/${p.id}`}
+              actions={isSuperAdmin ? (
+                <button
+                  className="flex items-center gap-1 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors"
+                  aria-label="Excluir produto permanentemente"
+                  onClick={(e) => { e.preventDefault(); setHardDeleting({ id: p.id, name: p.name }); }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Excluir</span>
+                </button>
+              ) : undefined}
+            />
           ))}
         </div>
       )}
+      <HardDeleteProductDialog
+        productId={hardDeleting?.id ?? null}
+        productName={hardDeleting?.name ?? ''}
+        onOpenChange={(open) => { if (!open) setHardDeleting(null); }}
+      />
     </div>
   );
 }
