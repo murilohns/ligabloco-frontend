@@ -88,3 +88,7 @@ export async function reactivateProduct(id: string): Promise<Product> {
   const { data } = await apiClient.patch<unknown>(`/products/${id}/reactivate`);
   return parseProduct(data);
 }
+
+export async function hardDeleteProduct(id: string, reason: string): Promise<void> {
+  await apiClient.delete(`/products/${id}/hard-delete`, { data: { reason } });
+}
