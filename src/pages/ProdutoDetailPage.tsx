@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
+import { HardDeleteProductDialog } from '@/components/products/HardDeleteProductDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -16,6 +18,8 @@ export default function ProdutoDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.user);
+
+  const [showHardDelete, setShowHardDelete] = useState(false);
 
   const {
     data: product,
@@ -61,6 +65,7 @@ export default function ProdutoDetailPage() {
   }
 
   const isOwner = product.seller.id === currentUser?.id;
+  const isSuperAdmin = currentUser?.adminRole === 'SUPER_ADMIN';
   const initials = product.seller.name
     .split(' ')
     .slice(0, 2)
@@ -110,10 +115,30 @@ export default function ProdutoDetailPage() {
                   Editar
                 </Button>
               )}
+              {isSuperAdmin && (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => setShowHardDelete(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir produto
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
+      {product && (
+        <HardDeleteProductDialog
+          productId={showHardDelete ? product.id : null}
+          productName={product.name}
+          onOpenChange={(open) => {
+            if (!open) setShowHardDelete(false);
+          }}
+          onSuccess={() => navigate('/produtos')}
+        />
+      )}
     </TooltipProvider>
   );
 }
