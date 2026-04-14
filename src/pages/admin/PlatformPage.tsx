@@ -247,7 +247,14 @@ export default function PlatformPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      items={[
+                        { value: 'SUPER_ADMIN', label: 'Super Admin' },
+                        { value: 'READ_ONLY_ADMIN', label: 'Somente Leitura' },
+                      ]}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o role" />

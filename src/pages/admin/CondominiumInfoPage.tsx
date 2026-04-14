@@ -51,7 +51,6 @@ interface CondominiumDetail {
   city: string;
   state: string;
   document: string;
-  access_code: string;
   is_active: boolean;
 }
 
@@ -66,7 +65,6 @@ const editSchema = z.object({
   document: z
     .string()
     .refine(isValidDocument, { message: 'Documento invalido — informe os 14 caracteres' }),
-  access_code: z.string().min(3, 'Codigo de acesso obrigatorio'),
 });
 type EditFormValues = z.infer<typeof editSchema>;
 
@@ -96,7 +94,7 @@ export default function CondominiumInfoPage() {
 
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editSchema),
-    defaultValues: { name: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', document: '', access_code: '' },
+    defaultValues: { name: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', document: '' },
   });
 
   useEffect(() => {
@@ -110,7 +108,6 @@ export default function CondominiumInfoPage() {
         city: condo.city,
         state: condo.state,
         document: condo.document,
-        access_code: condo.access_code,
       });
     }
   }, [condo, form]);
@@ -314,19 +311,6 @@ export default function CondominiumInfoPage() {
                       )} />
                   </div>
                 </div>
-                <FormField
-                  control={form.control}
-                  name="access_code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Código de acesso</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Status:</span>
                   <Badge variant={condo.is_active ? 'default' : 'secondary'}>
@@ -367,10 +351,6 @@ export default function CondominiumInfoPage() {
                   {condo.city ? `, ${condo.city}` : ''}
                   {condo.state ? `/${condo.state}` : ''}
                 </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Código de acesso</dt>
-                <dd className="text-sm">{condo.access_code}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Status</dt>

@@ -266,7 +266,16 @@ function EditResidentForm({ defaultValues, onSubmit, serverError, canManageRoles
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Papel</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    items={[
+                      { value: 'RESIDENT', label: 'Morador' },
+                      { value: 'CONDO_WRITE', label: 'Admin (Escrita)' },
+                      { value: 'CONDO_READ', label: 'Admin (Leitura)' },
+                      { value: 'CONDO_ADMIN', label: 'Administrador Completo' },
+                    ]}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione o papel" />

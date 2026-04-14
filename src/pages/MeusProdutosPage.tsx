@@ -176,7 +176,7 @@ export default function MeusProdutosPage() {
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="font-heading text-[28px] font-semibold">Meus anúncios</h1>
+            <h1 className="font-heading text-[28px] font-semibold">Minha vitrine</h1>
             <p className="text-sm text-muted-foreground mt-1">Gerencie os produtos que você publicou neste condomínio</p>
           </div>
         </div>
@@ -245,7 +245,7 @@ export default function MeusProdutosPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-[28px] font-semibold">Meus anúncios</h1>
+          <h1 className="font-heading text-[28px] font-semibold">Minha vitrine</h1>
           <p className="text-sm text-muted-foreground mt-1">Gerencie os produtos que você publicou neste condomínio</p>
         </div>
         <Button onClick={openNew} className="shrink-0">
@@ -356,7 +356,7 @@ export default function MeusProdutosPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remover este anúncio?</AlertDialogTitle>
             <AlertDialogDescription>
-              O anúncio será ocultado do browse. Você pode reativá-lo depois em &ldquo;Meus anúncios&rdquo;.
+              O anúncio será ocultado do browse. Você pode reativá-lo depois em &ldquo;Minha vitrine&rdquo;.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

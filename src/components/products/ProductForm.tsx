@@ -34,7 +34,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ImageUploader } from './ImageUploader';
 import { CATEGORY_ORDER, CATEGORY_LABELS, type Category } from '@/lib/categories';
-import { formatBRL } from '@/lib/price';
 import type { Product } from '@/lib/products.api';
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -81,13 +80,17 @@ interface Props {
   submitLabel: string;
 }
 
-// Parse various price formats to float
-function parsePrice(raw: string): number | null {
-  if (!raw.trim()) return null;
-  // Remove thousand-separator dots, replace comma decimal with dot
-  const cleaned = raw.replace(/\./g, '').replace(',', '.');
-  const num = parseFloat(cleaned);
-  return isNaN(num) ? null : num;
+// Format cents integer to BRL display string (e.g. 12550 → "125,50")
+function centsToDisplay(cents: number): string {
+  const reais = Math.floor(cents / 100);
+  const centavos = cents % 100;
+  const reaisStr = reais.toLocaleString('pt-BR');
+  return `${reaisStr},${String(centavos).padStart(2, '0')}`;
+}
+
+// Convert cents integer to float (e.g. 12550 → 125.50)
+function centsToFloat(cents: number): number {
+  return cents / 100;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -100,7 +103,7 @@ export const ProductForm = forwardRef<ProductFormHandle, Props>(
   const [imageError, setImageError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [discardOpen, setDiscardOpen] = useState(false);
-  const [priceRaw, setPriceRaw] = useState(initial ? String(initial.price) : '');
+  const [priceCents, setPriceCents] = useState(initial ? Math.round(initial.price * 100) : 0);
 
   const form = useForm<SchemaValues>({
     resolver: zodResolver(productSchema),
@@ -153,8 +156,6 @@ export const ProductForm = forwardRef<ProductFormHandle, Props>(
     handleCancel,
   }));
 
-  const parsedPrice = parsePrice(priceRaw);
-
   return (
     <>
       <Form {...form}>
@@ -203,6 +204,7 @@ export const ProductForm = forwardRef<ProductFormHandle, Props>(
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                   disabled={form.formState.isSubmitting}
+                  items={CATEGORY_ORDER.map((cat) => ({ value: cat, label: CATEGORY_LABELS[cat] }))}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -235,20 +237,17 @@ export const ProductForm = forwardRef<ProductFormHandle, Props>(
                       R$
                     </span>
                     <Input
-                      inputMode="decimal"
+                      inputMode="numeric"
                       className="pl-9"
-                      placeholder="0,00"
-                      value={priceRaw}
+                      value={centsToDisplay(priceCents)}
                       disabled={form.formState.isSubmitting}
                       onChange={(e) => {
-                        const raw = e.target.value;
-                        setPriceRaw(raw);
-                        const parsed = parsePrice(raw);
-                        if (parsed !== null) {
-                          field.onChange(parsed);
-                        } else {
-                          field.onChange(undefined);
-                        }
+                        // Strip everything except digits
+                        const digits = e.target.value.replace(/\D/g, '');
+                        const newCents = Math.min(parseInt(digits || '0', 10), 99999999);
+                        setPriceCents(newCents);
+                        const floatVal = centsToFloat(newCents);
+                        field.onChange(floatVal > 0 ? floatVal : undefined);
                       }}
                       onBlur={field.onBlur}
                       name={field.name}
@@ -256,9 +255,6 @@ export const ProductForm = forwardRef<ProductFormHandle, Props>(
                     />
                   </div>
                 </FormControl>
-                {parsedPrice !== null && parsedPrice > 0 && (
-                  <p className="text-xs text-muted-foreground">{formatBRL(parsedPrice)}</p>
-                )}
                 <FormMessage />
               </FormItem>
             )}

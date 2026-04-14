@@ -49,7 +49,6 @@ interface Condominium {
   neighborhood: string;
   city: string;
   state: string;
-  access_code: string;
   is_active: boolean;
 }
 
@@ -66,7 +65,6 @@ const createCondominiumSchema = z.object({
   neighborhood: z.string().min(1, 'Bairro obrigatorio'),
   city: z.string().min(1, 'Cidade obrigatoria'),
   state: z.string().length(2, 'UF deve ter 2 caracteres'),
-  access_code: z.string().min(1, 'Codigo de acesso obrigatorio').max(50),
 });
 
 type CreateCondominiumValues = z.infer<typeof createCondominiumSchema>;
@@ -109,7 +107,7 @@ interface CreateFormProps {
 function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
   const form = useForm<CreateCondominiumValues>({
     resolver: zodResolver(createCondominiumSchema),
-    defaultValues: { document: '', name: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', access_code: '' },
+    defaultValues: { document: '', name: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '' },
   });
 
   const { isSubmitting } = form.formState;
@@ -238,19 +236,6 @@ function CreateCondominiumForm({ onSubmit, serverError }: CreateFormProps) {
                 )} />
             </div>
           </div>
-          <FormField
-            control={form.control}
-            name="access_code"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Código de acesso</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
@@ -321,12 +306,10 @@ export default function CondominiumsPage() {
       const message = Array.isArray(rawMessage)
         ? rawMessage.join(' ').toLowerCase()
         : (rawMessage ?? '').toString().toLowerCase();
-      if (status === 409 && message.includes('document')) {
+      if (status === 409) {
         const msg = 'Já existe um condomínio com este CNPJ.';
         setCreateServerError(msg);
         toast.error(msg);
-      } else if (status === 409) {
-        setCreateServerError('Este código de acesso já está em uso. Escolha outro.');
       } else {
         setCreateServerError(
           'Não foi possível salvar. Revise os campos e tente novamente.',
