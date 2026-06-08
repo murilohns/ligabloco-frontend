@@ -41,7 +41,7 @@ export function ServiceCard({ service, to, actions }: Props) {
             <ImageOff className="h-12 w-12" aria-hidden />
           </div>
         )}
-        <Badge className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm text-foreground hover:bg-background/80">
+        <Badge variant="tag" className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm hover:bg-background/80">
           {SERVICE_CATEGORY_LABELS[service.category]}
         </Badge>
       </div>
@@ -54,7 +54,7 @@ export function ServiceCard({ service, to, actions }: Props) {
           </Avatar>
           <span className="line-clamp-1">{service.provider.name}</span>
         </div>
-        {actions && <div className="pt-2 border-t flex items-center gap-2">{actions}</div>}
+        {actions && <div className="pt-2 border-t border-dashed border-border flex items-center gap-2">{actions}</div>}
       </div>
     </>
   );

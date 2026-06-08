@@ -1,4 +1,3 @@
-import { formatBRL } from '@/lib/price';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -10,8 +9,16 @@ interface Props {
 /**
  * variant="card": Heading size (text-xl) + foreground color + tabular-nums
  * variant="detail": Display size (text-3xl) + primary color + tabular-nums
+ *
+ * Renders "R$" as a small superscript span separate from the numeric value,
+ * giving the artisanal price-tag look from the Terracota redesign.
  */
 export function PriceDisplay({ value, variant = 'card', className }: Props) {
+  const formatted = new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+
   return (
     <span
       className={cn(
@@ -21,7 +28,10 @@ export function PriceDisplay({ value, variant = 'card', className }: Props) {
         className,
       )}
     >
-      {formatBRL(value)}
+      <span className="text-[0.55em] align-super font-sans font-medium text-muted-foreground mr-0.5">
+        R$
+      </span>
+      {formatted}
     </span>
   );
 }

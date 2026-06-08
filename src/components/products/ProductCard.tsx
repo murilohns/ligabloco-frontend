@@ -47,7 +47,7 @@ export function ProductCard({ product, to, actions }: Props) {
             <ImageOff className="h-12 w-12" aria-hidden />
           </div>
         )}
-        <Badge className="absolute top-2 left-2 bg-secondary/90 backdrop-blur-sm text-secondary-foreground border border-border/60 hover:bg-secondary/90">
+        <Badge variant="tag" className="absolute top-2 left-2 bg-secondary/90 backdrop-blur-sm hover:bg-secondary/90">
           {CATEGORY_LABELS[product.category]}
         </Badge>
       </div>
@@ -60,7 +60,7 @@ export function ProductCard({ product, to, actions }: Props) {
           </Avatar>
           <span className="line-clamp-1">{product.seller.name}</span>
         </div>
-        {actions && <div className="pt-2 border-t flex items-center gap-2">{actions}</div>}
+        {actions && <div className="pt-2 border-t border-dashed border-border flex items-center gap-2">{actions}</div>}
       </div>
     </>
   );
