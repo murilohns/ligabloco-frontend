@@ -151,9 +151,7 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm">
             Anuncie pros seus vizinhos — sem taxas, direto pelo WhatsApp
           </p>
-          <Button asChild>
-            <Link to="/produtos/meus?new=1">+ Criar anúncio</Link>
-          </Button>
+          <Button nativeButton={false} render={<Link to="/produtos/meus?new=1" />}>+ Criar anúncio</Button>
         </div>
       )}
     </div>
