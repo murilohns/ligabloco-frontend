@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from './store/auth.store';
 import { apiClient } from './lib/axios';
@@ -67,6 +67,16 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Authenticated users have no business on the login screen — send them to the dashboard.
+// Waits for Bootstrap (isInitializing) so a hard refresh on /login restores the session first.
+function RedirectIfAuth({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((s) => s.accessToken);
+  const isInitializing = useAuthStore((s) => s.isInitializing);
+  if (isInitializing) return null;
+  if (token) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
 function RequireRole({
   role,
   children,
@@ -119,22 +129,30 @@ function RequireNonAdmin({ children, redirectTo }: { children: React.ReactNode; 
 }
 
 export const router = createBrowserRouter([
-  // Public routes
-  { path: '/login', element: <LoginPage /> },
-  { path: '/forgot-password', element: <ForgotPasswordPage /> },
-  { path: '/reset-password', element: <ResetPasswordPage /> },
-  { path: '/activate', element: <ActivatePage /> },
-
-  // Protected routes — wrapped in AppShell
   {
+    // Single Bootstrap for ALL routes — session restore runs once, public routes included,
+    // so a logged-in user hitting /login gets restored and redirected instead of seeing the form.
     element: (
       <Bootstrap>
-        <RequireAuth>
-          <AppShell />
-        </RequireAuth>
+        <Outlet />
       </Bootstrap>
     ),
     children: [
+      // Public routes — login/forgot redirect away when already authenticated.
+      // reset-password and activate stay accessible (token-based email flows, valid mid-session).
+      { path: '/login', element: <RedirectIfAuth><LoginPage /></RedirectIfAuth> },
+      { path: '/forgot-password', element: <RedirectIfAuth><ForgotPasswordPage /></RedirectIfAuth> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/activate', element: <ActivatePage /> },
+
+      // Protected routes — wrapped in AppShell
+      {
+        element: (
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        ),
+        children: [
       { path: '/dashboard', element: <DashboardPage /> },
       { path: '/profile', element: <ProfilePage /> },
       { path: '/produtos', element: <ProdutosPage /> },
@@ -178,9 +196,11 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // Default redirect & catch-all — inside Bootstrap so auth state is resolved
-      { path: '/', element: <Navigate to="/dashboard" replace /> },
-      { path: '*', element: <Navigate to="/dashboard" replace /> },
+          // Default redirect & catch-all — inside Bootstrap so auth state is resolved
+          { path: '/', element: <Navigate to="/dashboard" replace /> },
+          { path: '*', element: <Navigate to="/dashboard" replace /> },
+        ],
+      },
     ],
   },
 ]);
