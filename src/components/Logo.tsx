@@ -3,10 +3,9 @@ import { cn } from '@/lib/utils';
 /**
  * Logo da marca Liga Bloco.
  *
- * O ícone (prédios isométricos em terracota) compartilha o hue do --primary,
- * então em fundos primary/sidebar ele precisa ficar dentro de um container
- * creme (variant="onDark"). Em fundos claros, use variant="onLight" — o
- * ícone aparece "solto", sem container.
+ * O ícone (PNG com fundo RGBA transparente) em variant="onDark" vai direto
+ * sobre o gradiente, com drop-shadow para contraste. Em variant="onLight"
+ * o ícone fica dentro de um container branco para evitar halo.
  *
  * `withWordmark` controla se renderiza o texto "Liga Bloco" ao lado.
  */
@@ -46,17 +45,15 @@ export function Logo({
 }: LogoProps) {
   const iconSize = ICON_PX[size];
 
-  const iconWrapperClass = cn(
-    'flex items-center justify-center shrink-0 overflow-hidden',
-    // Em fundo escuro, encapsula em creme arredondado pra destacar o ícone terracota
-    variant === 'onDark' &&
-      'bg-[oklch(0.92_0.03_70)] rounded-xl p-1 ring-1 ring-white/20 shadow-sm',
-  );
-
   const textClass = cn(
     'font-heading font-bold tracking-tight',
     WORDMARK_CLASS[size],
     variant === 'onDark' ? 'text-primary-foreground' : 'text-primary',
+  );
+
+  const iconWrapperClass = cn(
+    'flex items-center justify-center shrink-0 overflow-hidden rounded-xl p-1',
+    'bg-white ring-1 ring-border shadow-xs',
   );
 
   return (
@@ -65,17 +62,29 @@ export function Logo({
       aria-label={ariaLabel}
       role="img"
     >
-      <div className={iconWrapperClass}>
+      {variant === 'onDark' ? (
         <img
           src="/logo.png"
           alt=""
           width={iconSize}
           height={iconSize}
-          style={{ width: iconSize, height: iconSize }}
-          className="object-contain"
+          style={{ width: iconSize, height: iconSize, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))' }}
+          className="object-contain shrink-0"
           draggable={false}
         />
-      </div>
+      ) : (
+        <div className={iconWrapperClass}>
+          <img
+            src="/logo.png"
+            alt=""
+            width={iconSize}
+            height={iconSize}
+            style={{ width: iconSize, height: iconSize }}
+            className="object-contain"
+            draggable={false}
+          />
+        </div>
+      )}
       {withWordmark && <span className={textClass}>Liga Bloco</span>}
     </div>
   );
