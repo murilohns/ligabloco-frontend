@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: 'Space Grotesk', sans-serif;
+    --font-heading: 'Fraunces', 'Georgia', serif;
     --font-sans: 'DM Sans', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -123,12 +123,18 @@
     }
   body {
     @apply bg-background text-foreground;
+    /* Atmosfera papel-quente: luz terracota no topo, creme difuso embaixo */
+    background-image:
+      radial-gradient(900px 420px at 85% -8%, color-mix(in oklch, var(--primary) 7%, transparent), transparent 70%),
+      radial-gradient(700px 380px at -10% 104%, color-mix(in oklch, var(--secondary) 55%, transparent), transparent 70%);
+    background-attachment: fixed;
     }
   html {
     @apply font-sans;
     }
   h1, h2, h3 {
-    @apply font-semibold tracking-tight;
+    @apply font-heading font-semibold tracking-tight;
+    font-variation-settings: 'opsz' 28;
     }
 }
 
@@ -173,18 +179,17 @@
   color: var(--muted-foreground);
 }
 
-@layer utilities {
-  .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .glass-dark {
-    background: rgba(76, 29, 149, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(167, 139, 250, 0.2);
-  }
+/* Sombras quentes — tingidas de terracota, nunca cinza puro */
+@utility shadow-warm-sm {
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--primary) 8%, transparent);
+}
+@utility shadow-warm {
+  box-shadow:
+    0 2px 4px color-mix(in oklch, var(--primary) 7%, transparent),
+    0 6px 16px color-mix(in oklch, var(--primary) 10%, transparent);
+}
+@utility shadow-warm-lg {
+  box-shadow:
+    0 4px 8px color-mix(in oklch, var(--primary) 8%, transparent),
+    0 16px 36px color-mix(in oklch, var(--primary) 14%, transparent);
 }

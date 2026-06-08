@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Logo } from '@/components/Logo';
 import {
   Sheet,
   SheetContent,
@@ -170,7 +171,7 @@ export default function AppShell() {
         }}
       >
         {/* Logo + condominium switcher */}
-        <span className="text-primary-foreground font-bold text-lg tracking-tight shrink-0">Liga Bloco</span>
+        <Logo size="sm" variant="onDark" className="shrink-0" />
 
         {user?.adminRole === null && activeCondoName && (
           <>

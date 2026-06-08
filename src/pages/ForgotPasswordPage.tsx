@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Logo } from '@/components/Logo';
 import { apiClient } from '../lib/axios';
 
 const schema = z.object({
@@ -49,7 +50,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex">
       {/* Left branded panel — hidden on mobile */}
       <div className="hidden md:flex md:w-2/5 bg-primary flex-col justify-center items-center p-12">
-        <span className="text-primary-foreground font-bold text-3xl tracking-tight">Liga Bloco</span>
+        <Logo size="lg" variant="onDark" />
         <p className="text-primary-foreground/70 text-sm mt-3 text-center max-w-xs">
           O marketplace do seu condomínio
         </p>
@@ -57,9 +58,9 @@ export default function ForgotPasswordPage() {
       {/* Right form panel */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Mobile-only logo */}
-        <span className="md:hidden text-primary font-bold text-2xl mb-8">Liga Bloco</span>
+        <Logo size="md" variant="onLight" className="md:hidden mb-8" />
 
-        <p className="text-[28px] font-semibold text-center">Redefinir senha</p>
+        <p className="font-heading text-[28px] font-semibold text-center">Redefinir senha</p>
         <p className="text-base text-muted-foreground text-center mt-2">
           Informe seu e-mail e enviaremos um link de redefinição
         </p>
