@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from './store/auth.store';
 import { apiClient } from './lib/axios';
 import AppShell from './components/AppShell';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -140,6 +141,7 @@ export const router = createBrowserRouter([
     children: [
       // Public routes — login/forgot redirect away when already authenticated.
       // reset-password and activate stay accessible (token-based email flows, valid mid-session).
+      { path: '/', element: <RedirectIfAuth><LandingPage /></RedirectIfAuth> },
       { path: '/login', element: <RedirectIfAuth><LoginPage /></RedirectIfAuth> },
       { path: '/forgot-password', element: <RedirectIfAuth><ForgotPasswordPage /></RedirectIfAuth> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
@@ -196,8 +198,7 @@ export const router = createBrowserRouter([
         ),
       },
 
-          // Default redirect & catch-all — inside Bootstrap so auth state is resolved
-          { path: '/', element: <Navigate to="/dashboard" replace /> },
+          // Catch-all — inside Bootstrap so auth state is resolved
           { path: '*', element: <Navigate to="/dashboard" replace /> },
         ],
       },
