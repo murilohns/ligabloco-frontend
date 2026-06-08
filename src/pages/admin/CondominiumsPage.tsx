@@ -460,7 +460,7 @@ export default function CondominiumsPage() {
                   </TableCell>
                   <TableCell>
                     {condo.is_active ? (
-                      <Badge className="bg-accent text-white">Ativo</Badge>
+                      <Badge className="bg-primary text-primary-foreground">Ativo</Badge>
                     ) : (
                       <Badge className="bg-muted text-muted-foreground">Inativo</Badge>
                     )}

@@ -135,7 +135,7 @@ export default function AppShell() {
         <div
           role="status"
           aria-live="polite"
-          className="w-full bg-amber-500 text-amber-950 py-3 px-4 md:px-6 flex items-center justify-between gap-3"
+          className="w-full bg-sidebar text-sidebar-foreground py-3 px-4 md:px-6 flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Eye className="h-4 w-4 shrink-0" aria-hidden />
@@ -143,7 +143,7 @@ export default function AppShell() {
               Visualizando como admin de {activeCondominiumName ?? 'condomínio'}
             </span>
             {user?.adminRole === 'READ_ONLY_ADMIN' && (
-              <span className="shrink-0 text-xs font-semibold bg-amber-800/20 text-amber-950 border border-amber-800/30 rounded px-1.5 py-0.5">
+              <span className="shrink-0 text-xs font-semibold bg-sidebar-accent text-sidebar-foreground border border-sidebar-border rounded px-1.5 py-0.5">
                 Somente leitura
               </span>
             )}
@@ -153,7 +153,7 @@ export default function AppShell() {
             size="sm"
             onClick={handleExitImpersonation}
             disabled={isExiting}
-            className="h-10 border-amber-800 text-amber-950 hover:bg-amber-400 bg-transparent"
+            className="h-10 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground bg-transparent"
             aria-label="Sair da visualização"
           >
             <LogOut className="h-4 w-4 mr-2" aria-hidden />
@@ -163,9 +163,9 @@ export default function AppShell() {
       )}
       {/* Header */}
       <header
-        className="h-14 border-b border-violet-200/40 flex items-center px-4 gap-4 sticky top-0 z-50"
+        className="h-14 border-b border-white/10 flex items-center px-4 gap-4 sticky top-0 z-50"
         style={{
-          background: 'linear-gradient(135deg, oklch(0.50 0.26 280) 0%, oklch(0.42 0.22 290) 100%)',
+          background: 'linear-gradient(135deg, var(--primary) 0%, var(--sidebar) 100%)',
           backdropFilter: 'blur(8px)',
         }}
       >
@@ -243,7 +243,7 @@ export default function AppShell() {
           <SheetHeader
             className="p-6 pb-4"
             style={{
-              background: 'linear-gradient(160deg, oklch(0.50 0.26 280) 0%, oklch(0.42 0.22 290) 100%)',
+              background: 'linear-gradient(160deg, var(--primary) 0%, var(--sidebar) 100%)',
             }}
           >
             <div className="flex items-center gap-3">
@@ -343,7 +343,7 @@ export default function AppShell() {
           {/* User info */}
           <div
             className="p-6 pb-4 shrink-0"
-            style={{ background: 'linear-gradient(160deg, oklch(0.50 0.26 280) 0%, oklch(0.42 0.22 290) 100%)' }}
+            style={{ background: 'linear-gradient(160deg, var(--primary) 0%, var(--sidebar) 100%)' }}
           >
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 shrink-0">

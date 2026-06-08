@@ -504,7 +504,7 @@ export default function ResidentsPage() {
                   </TableCell>
                   <TableCell>
                     {resident.is_active ? (
-                      <Badge className="bg-accent text-white">Ativo</Badge>
+                      <Badge className="bg-primary text-primary-foreground">Ativo</Badge>
                     ) : (
                       <Badge className="bg-muted text-muted-foreground">Inativo</Badge>
                     )}
