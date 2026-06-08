@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from '@/components/Logo';
@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck, ShoppingBag, Package, Wrench, Briefcase } from 'lucide-react';
+import { User, LogOut, LayoutGrid, Users, ChevronDown, Check, Loader2, Eye, Building2, ShieldCheck, ShoppingBag, Package, Wrench, Briefcase, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '../store/auth.store';
@@ -45,6 +45,7 @@ interface Condominium {
 
 export default function AppShell() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { user, activeCondominiumName, activeCondominiumId, updateToken, clearAuth, clearTenantContext } = useAuthStore();
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -130,6 +131,15 @@ export default function AppShell() {
     navigate(path);
   }
 
+  function isActive(path: string): boolean {
+    return location.pathname === path;
+  }
+
+  function isActiveStartsWith(prefix: string, exact?: string): boolean {
+    if (exact && location.pathname === exact) return false;
+    return location.pathname.startsWith(prefix);
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {isImpersonating && (
@@ -164,7 +174,7 @@ export default function AppShell() {
       )}
       {/* Header */}
       <header
-        className="h-14 border-b border-white/10 flex items-center px-4 gap-4 sticky top-0 z-50"
+        className="h-16 border-b border-white/10 flex items-center px-4 gap-4 sticky top-0 z-50"
         style={{
           background: 'linear-gradient(135deg, var(--primary) 0%, var(--sidebar) 100%)',
           backdropFilter: 'blur(8px)',
@@ -175,13 +185,13 @@ export default function AppShell() {
 
         {user?.adminRole === null && activeCondoName && (
           <>
-            <span className="text-primary-foreground/30 text-lg shrink-0">|</span>
             {condominiums.length > 1 ? (
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <button className="flex items-center gap-1 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50 rounded">
-                      <span className="truncate max-w-[180px]">{activeCondoName}</span>
+                    <button className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 rounded-full px-3 h-9 text-sm text-primary-foreground/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/50">
+                      <MapPin className="h-4 w-4 shrink-0" aria-hidden />
+                      <span className="truncate max-w-[160px]">{activeCondoName}</span>
                       {switching !== null ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
                       ) : (
@@ -209,9 +219,10 @@ export default function AppShell() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <span className="text-sm text-primary-foreground/80 truncate max-w-[180px]">
-                {activeCondoName}
-              </span>
+              <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 h-9 text-sm text-primary-foreground/90">
+                <MapPin className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="truncate max-w-[160px]">{activeCondoName}</span>
+              </div>
             )}
           </>
         )}
@@ -241,32 +252,12 @@ export default function AppShell() {
       {/* Sheet drawer — mobile only */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
-          <SheetHeader
-            className="p-6 pb-4"
-            style={{
-              background: 'linear-gradient(160deg, var(--primary) 0%, var(--sidebar) 100%)',
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                {profile?.avatar_url && (
-                  <AvatarImage src={uploadUrl(profile.avatar_url)} alt="Avatar" />
-                )}
-                <AvatarFallback className="bg-white/20 text-white text-base font-bold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <SheetTitle className="text-white text-base font-semibold truncate">
-                  {user?.name ?? 'Usuário'}
-                </SheetTitle>
-                <p className="text-white/70 text-xs truncate mt-0.5">{user?.email ?? ''}</p>
-              </div>
-            </div>
+          <SheetHeader className="p-4 border-b border-border">
+            <SheetTitle className="text-foreground text-base font-semibold truncate">
+              {user?.name ?? 'Usuário'}
+            </SheetTitle>
             {activeCondoName && (
-              <p className="text-white/60 text-xs mt-3 truncate">
-                {activeCondoName}
-              </p>
+              <p className="text-muted-foreground text-xs mt-0.5">{activeCondoName}</p>
             )}
           </SheetHeader>
           <nav className="flex flex-col py-3">
@@ -335,94 +326,152 @@ export default function AppShell() {
       </Sheet>
 
       {/* Body: persistent sidebar (lg+) + main content */}
-      <div className="flex" style={{ minHeight: 'calc(100vh - 3.5rem)' }}>
+      <div className="flex" style={{ minHeight: 'calc(100vh - 4rem)' }}>
         {/* Persistent sidebar — large screens only */}
         <aside
           className="hidden lg:flex flex-col w-64 border-r border-border bg-background shrink-0 sticky overflow-y-auto"
-          style={{ top: '3.5rem', height: 'calc(100vh - 3.5rem)' }}
+          style={{ top: '4rem', height: 'calc(100vh - 4rem)' }}
         >
-          {/* User info */}
-          <div
-            className="p-6 pb-4 shrink-0"
-            style={{ background: 'linear-gradient(160deg, var(--primary) 0%, var(--sidebar) 100%)' }}
-          >
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 shrink-0">
-                {profile?.avatar_url && (
-                  <AvatarImage src={uploadUrl(profile.avatar_url)} alt="Avatar" />
-                )}
-                <AvatarFallback className="bg-white/20 text-white text-sm font-bold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-white text-sm font-semibold truncate">{user?.name ?? 'Usuário'}</p>
-                <p className="text-white/70 text-xs truncate mt-0.5">{user?.email ?? ''}</p>
-              </div>
-            </div>
-            {activeCondoName && (
-              <p className="text-white/60 text-xs mt-3 truncate">{activeCondoName}</p>
-            )}
-          </div>
-
           {/* Nav */}
           <nav className="flex flex-col py-3 flex-1">
-            <button onClick={() => navigateTo('/profile')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-              <User className="h-4 w-4 text-muted-foreground shrink-0" />
+            <button
+              onClick={() => navigateTo('/profile')}
+              className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                isActive('/profile')
+                  ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                  : 'hover:bg-accent text-foreground'
+              }`}
+            >
+              <User className={`size-5 shrink-0 ${isActive('/profile') ? 'text-primary' : 'text-muted-foreground'}`} />
               Meu Perfil
             </button>
             {activeCondominiumId && (
               <>
-                <button onClick={() => navigateTo('/produtos')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                  <ShoppingBag className="h-4 w-4 text-muted-foreground shrink-0" />
+                <button
+                  onClick={() => navigateTo('/produtos')}
+                  className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                    isActiveStartsWith('/produtos', '/produtos/meus')
+                      ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                      : 'hover:bg-accent text-foreground'
+                  }`}
+                >
+                  <ShoppingBag className={`size-5 shrink-0 ${isActiveStartsWith('/produtos', '/produtos/meus') ? 'text-primary' : 'text-muted-foreground'}`} />
                   Produtos
                 </button>
                 {!user?.adminRole && (
-                  <button onClick={() => navigateTo('/produtos/meus')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                    <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <button
+                    onClick={() => navigateTo('/produtos/meus')}
+                    className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                      isActive('/produtos/meus')
+                        ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                        : 'hover:bg-accent text-foreground'
+                    }`}
+                  >
+                    <Package className={`size-5 shrink-0 ${isActive('/produtos/meus') ? 'text-primary' : 'text-muted-foreground'}`} />
                     Minha vitrine
                   </button>
                 )}
-                <button onClick={() => navigateTo('/services')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                  <Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
+                <button
+                  onClick={() => navigateTo('/services')}
+                  className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                    isActiveStartsWith('/services', '/services/mine')
+                      ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                      : 'hover:bg-accent text-foreground'
+                  }`}
+                >
+                  <Wrench className={`size-5 shrink-0 ${isActiveStartsWith('/services', '/services/mine') ? 'text-primary' : 'text-muted-foreground'}`} />
                   Serviços
                 </button>
                 {!user?.adminRole && (
-                  <button onClick={() => navigateTo('/services/mine')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                    <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <button
+                    onClick={() => navigateTo('/services/mine')}
+                    className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                      isActive('/services/mine')
+                        ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                        : 'hover:bg-accent text-foreground'
+                    }`}
+                  >
+                    <Briefcase className={`size-5 shrink-0 ${isActive('/services/mine') ? 'text-primary' : 'text-muted-foreground'}`} />
                     Meus serviços
                   </button>
                 )}
               </>
             )}
             {user?.adminRole !== null && (
-              <button onClick={() => navigateTo('/admin/condominiums')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                <LayoutGrid className="h-4 w-4 text-muted-foreground shrink-0" />
+              <button
+                onClick={() => navigateTo('/admin/condominiums')}
+                className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                  isActive('/admin/condominiums')
+                    ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                    : 'hover:bg-accent text-foreground'
+                }`}
+              >
+                <LayoutGrid className={`size-5 shrink-0 ${isActive('/admin/condominiums') ? 'text-primary' : 'text-muted-foreground'}`} />
                 Condomínios
               </button>
             )}
             {user?.adminRole === 'SUPER_ADMIN' && (
-              <button onClick={() => navigateTo('/admin/platform')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+              <button
+                onClick={() => navigateTo('/admin/platform')}
+                className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                  isActive('/admin/platform')
+                    ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                    : 'hover:bg-accent text-foreground'
+                }`}
+              >
+                <ShieldCheck className={`size-5 shrink-0 ${isActive('/admin/platform') ? 'text-primary' : 'text-muted-foreground'}`} />
                 Plataforma
               </button>
             )}
             {(user?.condoRole === 'CONDO_ADMIN' || user?.condoRole === 'CONDO_WRITE' || user?.condoRole === 'CONDO_READ' || user?.adminRole !== null) && (
-              <button onClick={() => navigateTo('/admin/residents')} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+              <button
+                onClick={() => navigateTo('/admin/residents')}
+                className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                  isActive('/admin/residents')
+                    ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                    : 'hover:bg-accent text-foreground'
+                }`}
+              >
+                <Users className={`size-5 shrink-0 ${isActive('/admin/residents') ? 'text-primary' : 'text-muted-foreground'}`} />
                 Moradores
               </button>
             )}
             {user?.condoRole === 'CONDO_ADMIN' && user?.adminRole === null && activeCondominiumId && (
-              <button onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)} className="flex items-center gap-3 px-5 py-3 text-left text-sm font-medium hover:bg-muted transition-colors active:bg-muted/80">
-                <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+              <button
+                onClick={() => navigateTo(`/admin/condominiums/${activeCondominiumId}`)}
+                className={`flex items-center gap-3 px-4 py-0 h-11 w-full text-left text-[15px] font-medium transition-colors relative ${
+                  isActiveStartsWith('/admin/condominiums/', '/admin/condominiums')
+                    ? 'bg-secondary text-primary font-semibold border-l-[3px] border-primary pl-[13px]'
+                    : 'hover:bg-accent text-foreground'
+                }`}
+              >
+                <Building2 className={`size-5 shrink-0 ${isActiveStartsWith('/admin/condominiums/', '/admin/condominiums') ? 'text-primary' : 'text-muted-foreground'}`} />
                 Informações do condomínio
               </button>
             )}
           </nav>
 
-          {/* Logout at bottom */}
+          {/* User card + Logout at bottom */}
           <div className="border-t border-border shrink-0">
+            <div className="p-3">
+              <div className="bg-secondary/60 border border-border rounded-xl p-3 flex items-center gap-3">
+                <Avatar className="h-10 w-10 rounded-lg shrink-0">
+                  {profile?.avatar_url && <AvatarImage src={uploadUrl(profile.avatar_url)} alt="Avatar" />}
+                  <AvatarFallback className="rounded-lg bg-primary/15 text-primary text-sm font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm text-foreground truncate">{user?.name ?? 'Usuário'}</p>
+                  <button
+                    onClick={() => navigateTo('/profile')}
+                    className="text-xs text-primary hover:underline focus:outline-none"
+                  >
+                    ver perfil →
+                  </button>
+                </div>
+              </div>
+            </div>
             <button
               onClick={() => setLogoutOpen(true)}
               className="flex items-center gap-3 px-5 py-3 w-full text-left text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors active:bg-destructive/15"
